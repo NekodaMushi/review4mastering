@@ -27,6 +27,12 @@ export default function DashboardPage() {
       <p>Welcome, {user.name || "User"}!</p>
       <p>Email: {user.email}</p>
       <button
+        onClick={() => router.push("/notes")}
+        className="w-full bg-blue-600 text-white font-medium rounded-mx px-4 py-2 hover:bg-blue-700"
+      >
+        My notes
+      </button>
+      <button
         onClick={() => signOut()}
         className="w-full bg-white text-black font-medium rounded-md px-4 py-2 hover:bg-gray-200"
       >

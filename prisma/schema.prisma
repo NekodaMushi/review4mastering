@@ -9,32 +9,34 @@ datasource db {
 }
 
 model note {
-  id                 String             @id @default(cuid())
-  user_id            String
-  text               String
-  link               String?            @db.VarChar(500)
-  stade_actuel       stade_revision?    @default(DIX_MINUTES)
-  created_at         DateTime?          @default(now()) @db.Timestamp(6)
-  prochaine_revision DateTime           @db.Timestamp(6)
-  derniere_revision  DateTime?          @db.Timestamp(6)
-  completed_at       DateTime?          @db.Timestamp(6)
-  updated_at         DateTime?          @default(now()) @db.Timestamp(6)
-  user               User               @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  revision_history   revision_history[]
+  id               String             @id @default(cuid())
+  user_id          String
+  name             String             @db.VarChar(255)
+  text             String
+  link             String?            @db.VarChar(500)
+  current_stage    RevisionStage?     @default(TEN_MINUTES)
+  created_at       DateTime?          @default(now()) @db.Timestamp(6)
+  next_revision    DateTime           @db.Timestamp(6)
+  last_revision    DateTime?          @db.Timestamp(6)
+  completed_at     DateTime?          @db.Timestamp(6)
+  updated_at       DateTime?          @default(now()) @db.Timestamp(6)
+  user             User               @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  revision_history revision_history[]
 
-  @@index([prochaine_revision], map: "idx_note_prochaine_revision")
-  @@index([stade_actuel], map: "idx_note_stade_actuel")
+  @@index([next_revision], map: "idx_note_prochaine_revision")
+  @@index([current_stage], map: "idx_note_stade_actuel")
   @@index([user_id], map: "idx_note_user_id")
 }
 
 model revision_history {
-  id            String          @id @default(cuid())
-  note_id       String
-  action_type   action_type
-  ancien_stade  stade_revision?
-  nouveau_stade stade_revision
-  created_at    DateTime?       @default(now()) @db.Timestamp(6)
-  note          note            @relation(fields: [note_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  id          String     @id @default(cuid())
+  note_id     String
+  action_type ActionType
+
+  old_stage  RevisionStage?
+  new_stage  RevisionStage
+  created_at DateTime?      @default(now()) @db.Timestamp(6)
+  note       note           @relation(fields: [note_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@index([note_id], map: "idx_revision_history_note_id")
 }
@@ -99,20 +101,20 @@ model Verification {
   @@map("verification")
 }
 
-enum action_type {
+enum ActionType {
   weak
   again
   good
 }
 
-enum stade_revision {
-  DIX_MINUTES @map("10_minutes")
-  UN_JOUR     @map("1_jour")
-  SEPT_JOURS  @map("7_jours")
-  UN_MOIS     @map("1_mois")
-  TROIS_MOIS  @map("3_mois")
-  UN_AN       @map("1_an")
-  DEUX_ANS    @map("2_ans")
-  CINQ_ANS    @map("5_ans")
+enum RevisionStage {
+  TEN_MINUTES  @map("10_minutes")
+  ONE_DAY      @map("1_day")
+  SEVEN_DAYS   @map("7_days")
+  ONE_MONTH    @map("1_month")
+  THREE_MONTHS @map("3_months")
+  ONE_YEAR     @map("1_year")
+  TWO_YEARS    @map("2_years")
+  FIVE_YEARS   @map("5_years")
   COMPLETED
 }
