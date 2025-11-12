@@ -67,7 +67,6 @@ export default function NotesPage() {
         )}
       </div>
 
-      {/* Modal */}
       <AddNote
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
