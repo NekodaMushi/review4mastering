@@ -1,0 +1,67 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model note {
+  id                 String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id            String             @db.Uuid
+  text               String
+  link               String?            @db.VarChar(500)
+  stade_actuel       stade_revision?    @default(DIX_MINUTES)
+  created_at         DateTime?          @default(now()) @db.Timestamp(6)
+  prochaine_revision DateTime           @db.Timestamp(6)
+  derniere_revision  DateTime?          @db.Timestamp(6)
+  completed_at       DateTime?          @db.Timestamp(6)
+  updated_at         DateTime?          @default(now()) @db.Timestamp(6)
+  user               user               @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  revision_history   revision_history[]
+
+  @@index([prochaine_revision], map: "idx_note_prochaine_revision")
+  @@index([stade_actuel], map: "idx_note_stade_actuel")
+  @@index([user_id], map: "idx_note_user_id")
+}
+
+model revision_history {
+  id            String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  note_id       String          @db.Uuid
+  action_type   action_type
+  ancien_stade  stade_revision?
+  nouveau_stade stade_revision
+  created_at    DateTime?       @default(now()) @db.Timestamp(6)
+  note          note            @relation(fields: [note_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([note_id], map: "idx_revision_history_note_id")
+}
+
+model user {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email         String    @unique @db.VarChar(255)
+  password_hash String    @db.VarChar(255)
+  created_at    DateTime? @default(now()) @db.Timestamp(6)
+  updated_at    DateTime? @default(now()) @db.Timestamp(6)
+  note          note[]
+}
+
+enum action_type {
+  weak
+  again
+  good
+}
+
+enum stade_revision {
+  DIX_MINUTES @map("10_minutes")
+  UN_JOUR     @map("1_jour")
+  SEPT_JOURS  @map("7_jours")
+  UN_MOIS     @map("1_mois")
+  TROIS_MOIS  @map("3_mois")
+  UN_AN       @map("1_an")
+  DEUX_ANS    @map("2_ans")
+  CINQ_ANS    @map("5_ans")
+  COMPLETED
+}
