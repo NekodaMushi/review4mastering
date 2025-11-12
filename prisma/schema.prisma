@@ -45,7 +45,6 @@ model User {
   email         String    @unique @db.VarChar(255)
   emailVerified Boolean   @default(false)
   image         String?
-  password_hash String?   @db.VarChar(255)
   createdAt     DateTime  @default(now()) @db.Timestamp(6)
   updatedAt     DateTime  @default(now()) @updatedAt @db.Timestamp(6)
   sessions      Session[]
