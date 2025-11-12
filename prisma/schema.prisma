@@ -9,8 +9,8 @@ datasource db {
 }
 
 model note {
-  id                 String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  user_id            String             @db.Uuid
+  id                 String             @id @default(cuid())
+  user_id            String
   text               String
   link               String?            @db.VarChar(500)
   stade_actuel       stade_revision?    @default(DIX_MINUTES)
@@ -19,7 +19,7 @@ model note {
   derniere_revision  DateTime?          @db.Timestamp(6)
   completed_at       DateTime?          @db.Timestamp(6)
   updated_at         DateTime?          @default(now()) @db.Timestamp(6)
-  user               user               @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  user               User               @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   revision_history   revision_history[]
 
   @@index([prochaine_revision], map: "idx_note_prochaine_revision")
@@ -28,8 +28,8 @@ model note {
 }
 
 model revision_history {
-  id            String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  note_id       String          @db.Uuid
+  id            String          @id @default(cuid())
+  note_id       String
   action_type   action_type
   ancien_stade  stade_revision?
   nouveau_stade stade_revision
@@ -39,13 +39,65 @@ model revision_history {
   @@index([note_id], map: "idx_revision_history_note_id")
 }
 
-model user {
-  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+model User {
+  id            String    @id @default(cuid())
+  name          String?
   email         String    @unique @db.VarChar(255)
-  password_hash String    @db.VarChar(255)
-  created_at    DateTime? @default(now()) @db.Timestamp(6)
-  updated_at    DateTime? @default(now()) @db.Timestamp(6)
-  note          note[]
+  emailVerified Boolean   @default(false)
+  image         String?
+  password_hash String?   @db.VarChar(255)
+  createdAt     DateTime  @default(now()) @db.Timestamp(6)
+  updatedAt     DateTime  @default(now()) @updatedAt @db.Timestamp(6)
+  sessions      Session[]
+  accounts      Account[]
+  notes         note[]
+
+  @@map("user")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  expiresAt DateTime
+  token     String
+  createdAt DateTime
+  updatedAt DateTime
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id @default(cuid())
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime
+  updatedAt             DateTime
+
+  @@map("account")
+}
+
+model Verification {
+  id         String    @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime?
+  updatedAt  DateTime?
+
+  @@map("verification")
 }
 
 enum action_type {
