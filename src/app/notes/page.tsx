@@ -4,11 +4,14 @@ import { useEffect, useState } from "react";
 import { note } from "@prisma/client";
 import { AddNote } from "@/components/AddNote";
 import { NoteCard } from "@/components/NoteCard";
+import { ReviewNote } from "@/components/ReviewNote";
 
 export default function NotesPage() {
   const [notes, setNotes] = useState<note[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedNote, setSelectedNote] = useState<note | null>(null);
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
 
   const fetchNotes = async () => {
     try {
@@ -27,18 +30,31 @@ export default function NotesPage() {
     fetchNotes();
   }, []);
 
+  const hasNotes = notes.length > 0;
+
+  const handleNoteClick = (note: note) => {
+    setSelectedNote(note);
+    setIsReviewModalOpen(true);
+  };
+
+  const handleReviewComplete = () => {
+    fetchNotes();
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900">My Notes</h1>
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-medium"
-          >
-            + Add Note
-          </button>
+          {hasNotes && (
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-medium"
+            >
+              + Add Note
+            </button>
+          )}
         </div>
 
         {/* Notes Grid */}
@@ -61,7 +77,13 @@ export default function NotesPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {notes.map((note) => (
-              <NoteCard key={note.id} note={note} />
+              <div
+                key={note.id}
+                onClick={() => handleNoteClick(note)}
+                className="cursor-pointer"
+              >
+                <NoteCard note={note} />
+              </div>
             ))}
           </div>
         )}
@@ -71,6 +93,13 @@ export default function NotesPage() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onNoteCreated={fetchNotes}
+      />
+
+      <ReviewNote
+        note={selectedNote}
+        isOpen={isReviewModalOpen}
+        onClose={() => setIsReviewModalOpen(false)}
+        onActionComplete={handleReviewComplete}
       />
     </div>
   );
