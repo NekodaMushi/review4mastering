@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import { note } from "@prisma/client";
 import { AddNote } from "@/components/AddNote";
-import { NoteCard } from "@/components/NoteCard";
 import { ReviewNote } from "@/components/ReviewNote";
+import { SwipeableNoteCard } from "@/components/SwipeableNoteCard";
 
 export default function NotesPage() {
   const [notes, setNotes] = useState<note[]>([]);
@@ -41,6 +41,27 @@ export default function NotesPage() {
     fetchNotes();
   };
 
+  const handleDeleteNote = async (noteId: string) => {
+    try {
+      await fetch(`/api/notes/${noteId}`, { method: "DELETE" });
+      fetchNotes();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleArchiveNote = async (noteId: string) => {
+    try {
+      await fetch(`/api/notes/${noteId}/archive`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ archived: true }),
+      });
+      fetchNotes();
+    } catch (err) {
+      console.error(err);
+    }
+  };
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-6xl mx-auto">
@@ -75,15 +96,15 @@ export default function NotesPage() {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {notes.map((note) => (
-              <div
-                key={note.id}
-                onClick={() => handleNoteClick(note)}
-                className="cursor-pointer"
-              >
-                <NoteCard note={note} />
-              </div>
+          <div className="grid grid-cols-1 gap-4">
+            {notes.map((n) => (
+              <SwipeableNoteCard
+                key={n.id}
+                note={n}
+                onDelete={handleDeleteNote}
+                onArchive={handleArchiveNote}
+                onClick={handleNoteClick}
+              />
             ))}
           </div>
         )}
