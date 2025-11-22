@@ -42,5 +42,5 @@ jobs:
           key: ${{ secrets.DEPLOY_KEY }}
           script: |
             cd ~/review4mastering
-            docker-compose pull
-            docker-compose up -d
+            docker compose pull
+            docker compose up -d
