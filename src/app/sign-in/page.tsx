@@ -3,10 +3,16 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "@/lib/auth-client";
+import { EyeToggleBtn } from "@/components/ui/EyeToggleBtn";
 
 export default function SignInPage() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+
+  function toggleShowPassword() {
+    setShowPassword((s) => !s);
+  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -40,13 +46,20 @@ export default function SignInPage() {
           required
           className="w-full rounded-md bg-neutral-900 border border-neutral-700 px-3 py-2"
         />
-        <input
-          name="password"
-          type="password"
-          placeholder="Password"
-          required
-          className="w-full rounded-md bg-neutral-900 border border-neutral-700 px-3 py-2"
-        />
+        <div className="relative">
+          <input
+            name="password"
+            type={showPassword ? "test" : "password"}
+            placeholder="Password"
+            required
+            className="w-full rounded-md bg-neutral-900 border border-neutral-700 px-3 py-2"
+          />
+          <EyeToggleBtn
+            pressed={showPassword}
+            onClick={toggleShowPassword}
+            className="absolute inset-y-0 right-2 flex items-center text-neutral-400 hover:text-neutral-200"
+          />
+        </div>
         <button
           type="submit"
           className="w-full bg-white text-black font-medium rounded-md px-4 py-2 hover:bg-gray-200"
