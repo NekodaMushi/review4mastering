@@ -22,7 +22,7 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { name, text, link } = createNoteSchema.parse(body);
 
-    const nextRevision = new Date(Date.now() + 10 * 60 * 1000);
+    const nextReview = new Date(Date.now() + 10 * 60 * 1000);
 
     const note = await prisma.note.create({
       data: {
@@ -31,7 +31,7 @@ export async function POST(req: Request) {
         text,
         link: link || null,
         current_stage: "TEN_MINUTES",
-        next_revision: nextRevision,
+        next_review: nextReview,
       },
     });
 

@@ -1,9 +1,9 @@
 "use client";
 
-import { note, RevisionStage } from "@prisma/client";
+import { note, ReviewStage } from "@prisma/client";
 import { useState } from "react";
 
-const stageLabels: Record<RevisionStage, string> = {
+const stageLabels: Record<ReviewStage, string> = {
   TEN_MINUTES: "10 minutes",
   ONE_DAY: "1 day",
   SEVEN_DAYS: "7 days",
@@ -15,7 +15,7 @@ const stageLabels: Record<RevisionStage, string> = {
   COMPLETED: "Completed",
 };
 
-const stageBgColor: Record<RevisionStage, string> = {
+const stageBgColor: Record<ReviewStage, string> = {
   TEN_MINUTES: "bg-red-100 text-red-800",
   ONE_DAY: "bg-orange-100 text-orange-800",
   SEVEN_DAYS: "bg-yellow-100 text-yellow-800",
