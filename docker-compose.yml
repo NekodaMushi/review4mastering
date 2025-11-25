@@ -3,6 +3,8 @@ services:
     image: nekodamushi/review4mastering:latest
     container_name: review4mastering
     restart: unless-stopped
+    depends_on:
+      - redis
     networks:
       - n8n_default
     environment:
@@ -15,6 +17,7 @@ services:
       - CRON_SECRET=${CRON_SECRET}
       - APP_URL=https://review4mastering.nekagentic.fr
       - NODE_ENV=production
+      - REDIS_URL=redis://redis:6379
     labels:
       - traefik.enable=true
       - traefik.http.routers.review4mastering.rule=Host(`review4mastering.nekagentic.fr`)
@@ -23,6 +26,19 @@ services:
       - traefik.http.routers.review4mastering.tls.certresolver=mytlschallenge
       - traefik.http.services.review4mastering.loadbalancer.server.port=3000
 
+  redis:
+    image: redis:7-alpine
+    container_name: review4mastering-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    networks:
+      - n8n_default
+    volumes:
+      - redis_data:/data
+
 networks:
   n8n_default:
     external: true
+
+volumes:
+  redis_data:
