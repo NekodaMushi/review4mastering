@@ -1,13 +1,14 @@
+
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { z } from "zod";
-import { ReviewStage, ActionType } from "@prisma/client";
+import { ReviewStage } from "@prisma/client";
+import { scheduleReviewNotification } from "@/lib/reviewQueue";
 
-const actionSchema = z.object({
+const reviewSchema = z.object({
   action: z.enum(["weak", "again", "good"]),
 });
-
 
 const STAGES: ReviewStage[] = [
   "TEN_MINUTES",
@@ -21,9 +22,8 @@ const STAGES: ReviewStage[] = [
   "COMPLETED",
 ];
 
-
 const STAGE_DURATIONS: Record<ReviewStage, number> = {
-  TEN_MINUTES: 10,
+  TEN_MINUTES: 0.2, // To be removed after testing
   ONE_DAY: 24 * 60,
   SEVEN_DAYS: 7 * 24 * 60,
   ONE_MONTH: 30 * 24 * 60,
@@ -31,12 +31,12 @@ const STAGE_DURATIONS: Record<ReviewStage, number> = {
   ONE_YEAR: 365 * 24 * 60,
   TWO_YEARS: 730 * 24 * 60,
   FIVE_YEARS: 1825 * 24 * 60,
-  COMPLETED: 0, 
+  COMPLETED: 0,
 };
 
 function calculateNextStage(
   currentStage: ReviewStage,
-  action: ActionType
+  action: string
 ): ReviewStage {
   const currentIndex = STAGES.indexOf(currentStage);
 
@@ -46,12 +46,10 @@ function calculateNextStage(
   }
 
   if (action === "again") {
-
     return currentStage;
   }
 
   if (action === "weak") {
-
     const prevIndex = Math.max(currentIndex - 1, 0);
     return STAGES[prevIndex];
   }
@@ -61,19 +59,18 @@ function calculateNextStage(
 
 function calculateNextReview(stage: ReviewStage): Date {
   if (stage === "COMPLETED") {
-
     return new Date(Date.now() + 100 * 365 * 24 * 60 * 60 * 1000);
   }
 
   const durationMs = STAGE_DURATIONS[stage] * 60 * 1000;
   return new Date(Date.now() + durationMs);
 }
+
 export async function PATCH(
   req: Request,
   context: { params: Promise<{ id: string }> }
 ) {
   try {
-
     const { id } = await context.params;
 
     const session = await auth.api.getSession({
@@ -85,7 +82,7 @@ export async function PATCH(
     }
 
     const body = await req.json();
-    const { action } = actionSchema.parse(body);
+    const { action } = reviewSchema.parse(body);
 
     const note = await prisma.note.findUnique({
       where: { id },
@@ -102,24 +99,31 @@ export async function PATCH(
     const oldStage = note.current_stage;
     const newStage = calculateNextStage(
       oldStage || "TEN_MINUTES",
-      action as ActionType
+      action
     );
-    const nextReview = calculateNextReview(newStage);
+    const nextReviewDate = calculateNextReview(newStage);
+
 
     const updatedNote = await prisma.note.update({
       where: { id },
       data: {
         current_stage: newStage,
-        next_review: nextReview,
+        next_review: nextReviewDate,
         last_review: new Date(),
         completed_at: newStage === "COMPLETED" ? new Date() : null,
       },
     });
 
+    // SCHEDULE Bull (Redis)
+    if (newStage !== "COMPLETED") {
+      await scheduleReviewNotification(id, nextReviewDate);
+    }
+
+    // Historique 
     await prisma.review_history.create({
       data: {
         note_id: id,
-        action_type: action as ActionType,
+        action_type: action,
         old_stage: oldStage,
         new_stage: newStage,
       },
@@ -131,9 +135,9 @@ export async function PATCH(
       const first = error.issues?.[0]?.message ?? "Validation error";
       return Response.json({ error: first }, { status: 400 });
     }
-    console.error("Error updating note:", error);
+    console.error("Error marking note as reviewed:", error);
     return Response.json(
-      { error: "Failed to update note" },
+      { error: "Failed to mark note as reviewed" },
       { status: 500 }
     );
   }

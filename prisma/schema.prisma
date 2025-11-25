@@ -9,36 +9,36 @@ datasource db {
 }
 
 model note {
-  id               String             @id @default(cuid())
-  user_id          String
-  name             String             @db.VarChar(255)
-  text             String
-  link             String?            @db.VarChar(500)
-  current_stage    RevisionStage?     @default(TEN_MINUTES)
-  created_at       DateTime?          @default(now()) @db.Timestamp(6)
-  next_revision    DateTime           @db.Timestamp(6)
-  last_revision    DateTime?          @db.Timestamp(6)
-  completed_at     DateTime?          @db.Timestamp(6)
-  updated_at       DateTime?          @default(now()) @db.Timestamp(6)
-  user             User               @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  revision_history revision_history[]
+  id             String           @id @default(cuid())
+  user_id        String
+  name           String           @db.VarChar(255)
+  text           String
+  link           String?          @db.VarChar(500)
+  current_stage  ReviewStage?     @default(TEN_MINUTES)
+  created_at     DateTime?        @default(now()) @db.Timestamp(6)
+  next_review    DateTime         @db.Timestamp(6)
+  last_review    DateTime?        @db.Timestamp(6)
+  completed_at   DateTime?        @db.Timestamp(6)
+  updated_at     DateTime?        @default(now()) @db.Timestamp(6)
+  user           User             @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  review_history review_history[]
 
-  @@index([next_revision], map: "idx_note_prochaine_revision")
+  @@index([next_review], map: "idx_note_prochaine_review")
   @@index([current_stage], map: "idx_note_stade_actuel")
   @@index([user_id], map: "idx_note_user_id")
 }
 
-model revision_history {
+model review_history {
   id          String     @id @default(cuid())
   note_id     String
   action_type ActionType
 
-  old_stage  RevisionStage?
-  new_stage  RevisionStage
-  created_at DateTime?      @default(now()) @db.Timestamp(6)
-  note       note           @relation(fields: [note_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  old_stage  ReviewStage?
+  new_stage  ReviewStage
+  created_at DateTime?    @default(now()) @db.Timestamp(6)
+  note       note         @relation(fields: [note_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
-  @@index([note_id], map: "idx_revision_history_note_id")
+  @@index([note_id], map: "idx_review_history_note_id")
 }
 
 model User {
@@ -107,7 +107,7 @@ enum ActionType {
   good
 }
 
-enum RevisionStage {
+enum ReviewStage {
   TEN_MINUTES  @map("10_minutes")
   ONE_DAY      @map("1_day")
   SEVEN_DAYS   @map("7_days")
