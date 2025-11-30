@@ -3,10 +3,13 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { note } from "@prisma/client";
+import { ArrowLeftIcon, Bell, Plus } from "lucide-react";
 import { AddNote } from "@/components/AddNote";
 import { ReviewNote } from "@/components/ReviewNote";
 import { SwipeableNoteCard } from "@/components/SwipeableNoteCard";
 import { NotificationPanel } from "@/components/NotificationPanel";
+import { Button } from "@/components/ui/button";
+import { ButtonGroup } from "@/components/ui/button-group";
 
 export default function NotesPage() {
   const router = useRouter();
@@ -71,30 +74,45 @@ export default function NotesPage() {
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900">My Notes</h1>
-          <div className="flex gap-3">
-            <button
-              onClick={() => router.push("/dashboard")}
-              className="px-6 py-3 bg-pink-700 text-white rounded-lg hover:bg-pink-600 font-medium"
-            >
-              ← Dashboard
-            </button>
-            {hasNotes && (
-              <>
-                <button
+        <div className="mb-8">
+          <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
+            <h1 className="text-4xl font-bold text-gray-900">
+              Review4Mastering
+            </h1>
+
+            {hasNotes ? (
+              <ButtonGroup className="w-fit">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  aria-label="Dashboard"
+                  onClick={() => router.push("/dashboard")}
+                >
+                  <ArrowLeftIcon />
+                </Button>
+                <Button
+                  variant="outline"
                   onClick={() => setIsNotificationPanelOpen(true)}
-                  className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-400 font-medium"
                 >
-                  🔔 Notifications
-                </button>
-                <button
-                  onClick={() => setIsModalOpen(true)}
-                  className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-500 font-medium"
+                  <Bell className="mr-2 h-4 w-4" />
+                  Notifications
+                </Button>
+                <Button variant="outline" onClick={() => setIsModalOpen(true)}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add Note
+                </Button>
+              </ButtonGroup>
+            ) : (
+              <ButtonGroup className="w-fit">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  aria-label="Dashboard"
+                  onClick={() => router.push("/dashboard")}
                 >
-                  + Add Note
-                </button>
-              </>
+                  <ArrowLeftIcon />
+                </Button>
+              </ButtonGroup>
             )}
           </div>
         </div>
@@ -117,7 +135,7 @@ export default function NotesPage() {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 gap-4 ">
             {notes.map((n) => (
               <SwipeableNoteCard
                 key={n.id}
