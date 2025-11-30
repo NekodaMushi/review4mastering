@@ -24,7 +24,7 @@ export async function sendNtfyNotification({
   userId,
   noteId,
   priority = 3,
-  tags = ["clipboard"],
+  tags = [],
 }: NtfyParams) {
   const ntfyServer = process.env.NTFY_BASE_URL || "https://ntfy.nekagentic.fr";
   const appBaseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://192.168.0.103:3000";
