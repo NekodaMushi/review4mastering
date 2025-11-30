@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { X, Copy, Check, AlertCircle } from "lucide-react";
+import { safeFetchWithRetry } from "@/lib/utils/fetch-utils";
 
 interface NotificationData {
   userId: string;
@@ -26,16 +27,18 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
 
     const fetchData = async () => {
       setLoading(true);
-      try {
-        const response = await fetch("/api/notifications/subscribe-link");
-        if (!response.ok) throw new Error("Failed to fetch subscribe link");
-        const result = await response.json();
-        setData(result);
-      } catch (error) {
-        console.error("Error fetching notification data:", error);
-      } finally {
-        setLoading(false);
+      const result = await safeFetchWithRetry<NotificationData>(
+        "/api/notifications/subscribe-link",
+        { credentials: "include", retries: 3 }
+      );
+
+      if (result.error) {
+        console.error("Setup failed:", result.error);
+      } else {
+        setData(result.data);
       }
+
+      setLoading(false);
     };
 
     fetchData();
@@ -124,9 +127,7 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
                 Copy &amp; paste these credentials:
               </p>
 
-              {/* Credentials Box */}
               <div className="space-y-2 bg-gray-50 p-4 rounded-lg border border-gray-200">
-                {/* Server */}
                 <div>
                   <label className="text-xs font-semibold text-gray-700 block mb-1">
                     Server
@@ -149,7 +150,6 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
                   </div>
                 </div>
 
-                {/* Username */}
                 <div>
                   <label className="text-xs font-semibold text-gray-700 block mb-1">
                     Username
@@ -172,7 +172,6 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
                   </div>
                 </div>
 
-                {/* Password */}
                 <div>
                   <label className="text-xs font-semibold text-gray-700 block mb-1">
                     Password
@@ -249,7 +248,6 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
           </div>
         )}
 
-        {/* Close Button */}
         <button
           onClick={onClose}
           className="w-full mt-8 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium transition"
