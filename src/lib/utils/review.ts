@@ -26,7 +26,7 @@ export function getReviewStatus(
       label: "⏰ Due now!",
       bgColor: stageBgColor[fallbackStage],
       textColor: "",
-      dateText: `Planned review: ${reviewDate.toLocaleDateString()}`,
+      dateText: `Next review: ${reviewDate.toLocaleDateString()}`,
       showReviewButtons: true,
     };
   }
@@ -36,7 +36,7 @@ export function getReviewStatus(
     label: stageLabels[fallbackStage],
     bgColor: stageBgColor[fallbackStage],
     textColor: "",
-    dateText: `Planned review: ${reviewDate.toLocaleDateString()}`,
+    dateText: `Next review: ${reviewDate.toLocaleDateString()}`,
     showReviewButtons: false,
   };
 }

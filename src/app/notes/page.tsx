@@ -11,10 +11,8 @@ import {
   CheckCheck,
   Archive,
   Clock,
-  Calendar,
-  List,
-  Tag,
   Trash2,
+  X,
 } from "lucide-react";
 import { AddNote } from "@/components/AddNote";
 import { ReviewNote } from "@/components/ReviewNote";
@@ -29,6 +27,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function NotesPage() {
   const router = useRouter();
@@ -38,6 +46,13 @@ export default function NotesPage() {
   const [selectedNote, setSelectedNote] = useState<note | null>(null);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [isNotificationPanelOpen, setIsNotificationPanelOpen] = useState(false);
+
+  const [selectionMode, setSelectionMode] = useState<
+    "delete" | "archive" | null
+  >(null);
+  const [selectedNotes, setSelectedNotes] = useState<Set<string>>(new Set());
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const fetchNotes = async () => {
     try {
@@ -59,8 +74,21 @@ export default function NotesPage() {
   const hasNotes = notes.length > 0;
 
   const handleNoteClick = (note: note) => {
-    setSelectedNote(note);
-    setIsReviewModalOpen(true);
+    if (selectionMode) {
+      setSelectedNotes((prev) => {
+        const newSet = new Set(prev);
+        if (newSet.has(note.id)) {
+          newSet.delete(note.id);
+        } else {
+          newSet.add(note.id);
+        }
+        return newSet;
+      });
+    } else {
+      // Mode normal: ouvrir la modal de review
+      setSelectedNote(note);
+      setIsReviewModalOpen(true);
+    }
   };
 
   const handleReviewComplete = () => {
@@ -89,6 +117,49 @@ export default function NotesPage() {
     }
   };
 
+  const enterSelectionMode = (mode: "delete" | "archive") => {
+    setSelectionMode(mode);
+    setSelectedNotes(new Set());
+  };
+
+  const exitSelectionMode = () => {
+    setSelectionMode(null);
+    setSelectedNotes(new Set());
+  };
+
+  const openConfirmDialog = () => {
+    if (selectedNotes.size === 0) return;
+    setIsConfirmDialogOpen(true);
+  };
+
+  const handleBatchAction = async () => {
+    setIsProcessing(true);
+    setIsConfirmDialogOpen(false);
+
+    try {
+      const promises = Array.from(selectedNotes).map((noteId) => {
+        if (selectionMode === "delete") {
+          return fetch(`/api/notes/${noteId}`, { method: "DELETE" });
+        } else if (selectionMode === "archive") {
+          return fetch(`/api/notes/${noteId}/archive`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ archived: true }),
+          });
+        }
+      });
+
+      await Promise.all(promises);
+      await fetchNotes();
+      exitSelectionMode();
+    } catch (error) {
+      console.error("Error during batch action:", error);
+      alert("An error occurred during the operation");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-6xl mx-auto">
@@ -112,11 +183,16 @@ export default function NotesPage() {
                 <Button
                   variant="outline"
                   onClick={() => setIsNotificationPanelOpen(true)}
+                  disabled={!!selectionMode}
                 >
                   <Bell className="mr-2 h-4 w-4" />
                   Notifications
                 </Button>
-                <Button variant="outline" onClick={() => setIsModalOpen(true)}>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsModalOpen(true)}
+                  disabled={!!selectionMode}
+                >
                   <Plus className="mr-2 h-4 w-4" />
                   Add Note
                 </Button>
@@ -128,6 +204,7 @@ export default function NotesPage() {
                       variant="outline"
                       size="icon"
                       aria-label="More options"
+                      disabled={!!selectionMode}
                     >
                       <MoreVertical className="h-4 w-4" />
                     </Button>
@@ -144,14 +221,18 @@ export default function NotesPage() {
 
                     <DropdownMenuSeparator />
 
-                    <DropdownMenuItem className="">
+                    <DropdownMenuItem
+                      onClick={() => enterSelectionMode("archive")}
+                    >
                       <Archive className="mr-2 h-4 w-4 text-green-700" />
                       Archive notes
                     </DropdownMenuItem>
 
                     <DropdownMenuSeparator />
 
-                    <DropdownMenuItem className="">
+                    <DropdownMenuItem
+                      onClick={() => enterSelectionMode("delete")}
+                    >
                       <Trash2 className="mr-2 h-4 w-4 text-red-600" />
                       Trash notes
                     </DropdownMenuItem>
@@ -171,6 +252,65 @@ export default function NotesPage() {
               </ButtonGroup>
             )}
           </div>
+
+          {/* Barre de sélection active */}
+          {selectionMode && (
+            <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                {selectionMode === "delete" ? (
+                  <Trash2 className="h-5 w-5 text-red-600" />
+                ) : (
+                  <Archive className="h-5 w-5 text-green-700" />
+                )}
+                <div>
+                  <p className="font-medium text-gray-900">
+                    {selectionMode === "delete"
+                      ? "Delete Mode"
+                      : "Archive Mode"}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    {selectedNotes.size} note
+                    {selectedNotes.size !== 1 ? "s" : ""} selected
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={exitSelectionMode}
+                  disabled={isProcessing}
+                >
+                  <X className="mr-2 h-4 w-4" />
+                  Cancel
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={openConfirmDialog}
+                  disabled={selectedNotes.size === 0 || isProcessing}
+                  className={
+                    selectionMode === "delete"
+                      ? "bg-red-600 hover:bg-red-700"
+                      : "bg-green-600 hover:bg-green-700"
+                  }
+                >
+                  {isProcessing ? (
+                    "Processing..."
+                  ) : (
+                    <>
+                      {selectionMode === "delete" ? (
+                        <Trash2 className="mr-2 h-4 w-4" />
+                      ) : (
+                        <Archive className="mr-2 h-4 w-4" />
+                      )}
+                      {selectionMode === "delete" ? "Delete" : "Archive"} (
+                      {selectedNotes.size})
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Notes Grid */}
@@ -191,7 +331,7 @@ export default function NotesPage() {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-4 ">
+          <div className="grid grid-cols-1 gap-4">
             {notes.map((n) => (
               <SwipeableNoteCard
                 key={n.id}
@@ -199,6 +339,8 @@ export default function NotesPage() {
                 onDelete={handleDeleteNote}
                 onArchive={handleArchiveNote}
                 onClick={handleNoteClick}
+                selectionMode={selectionMode}
+                isSelected={selectedNotes.has(n.id)}
               />
             ))}
           </div>
@@ -222,6 +364,52 @@ export default function NotesPage() {
         isOpen={isNotificationPanelOpen}
         onClose={() => setIsNotificationPanelOpen(false)}
       />
+
+      {/* Confirmation */}
+      <AlertDialog
+        open={isConfirmDialogOpen}
+        onOpenChange={setIsConfirmDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {selectionMode === "delete" ? (
+                <>
+                  This action will permanently delete {selectedNotes.size} note
+                  {selectedNotes.size !== 1 ? "s" : ""}. This action cannot be
+                  undone.
+                </>
+              ) : (
+                <>
+                  This action will archive {selectedNotes.size} note
+                  {selectedNotes.size !== 1 ? "s" : ""}.
+                </>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isProcessing}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleBatchAction}
+              disabled={isProcessing}
+              className={
+                selectionMode === "delete"
+                  ? "bg-red-600 hover:bg-red-700"
+                  : "bg-green-600 hover:bg-green-700"
+              }
+            >
+              {isProcessing
+                ? "Processing..."
+                : selectionMode === "delete"
+                ? "Delete All"
+                : "Archive All"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

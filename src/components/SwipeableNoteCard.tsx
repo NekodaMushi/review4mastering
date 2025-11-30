@@ -28,6 +28,8 @@ interface SwipeableNoteCardProps {
   onDelete?: (noteId: string) => void;
   onArchive?: (noteId: string) => void;
   onClick?: (note: note) => void;
+  selectionMode?: "delete" | "archive" | null;
+  isSelected?: boolean;
 }
 
 export function SwipeableNoteCard({
@@ -35,6 +37,8 @@ export function SwipeableNoteCard({
   onDelete,
   onArchive,
   onClick,
+  selectionMode = null,
+  isSelected = false,
 }: SwipeableNoteCardProps) {
   const x = useMotionValue(0);
   const opacity = useMotionValue(1);
@@ -43,9 +47,6 @@ export function SwipeableNoteCard({
   const isDraggingRef = useRef(false);
   const [containerWidth, setContainerWidth] = useState(0);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [pendingAction, setPendingAction] = useState<
-    "delete" | "archive" | null
-  >(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
@@ -98,7 +99,6 @@ export function SwipeableNoteCard({
     }
 
     if (info.offset.x < -swipeThreshold) {
-      setPendingAction("delete");
       setIsDeleteDialogOpen(true);
       await animate(x, 0, {
         type: "spring",
@@ -132,11 +132,9 @@ export function SwipeableNoteCard({
 
       await animateOut("left");
       onDelete?.(note.id);
-      setPendingAction(null);
     } catch (error) {
       console.error("Error deleting note:", error);
       alert("Error during deletion");
-      setPendingAction(null);
     } finally {
       setIsDeleting(false);
     }
@@ -144,7 +142,6 @@ export function SwipeableNoteCard({
 
   const handleCancelDelete = () => {
     setIsDeleteDialogOpen(false);
-    setPendingAction(null);
   };
 
   const handleClick = () => {
@@ -171,10 +168,37 @@ export function SwipeableNoteCard({
     height.set("0px");
   };
 
+  // Afficher en mode skeleton si sélectionné
+  const shouldShowSkeleton = isSelected && selectionMode;
+
+  // Déterminer les couleurs selon le mode
+  const getSelectionColors = () => {
+    if (selectionMode === "delete") {
+      return {
+        background: "bg-red-50",
+        border: "border-red-500",
+        borderSeparator: "border-red-200",
+      };
+    } else if (selectionMode === "archive") {
+      return {
+        background: "bg-green-50",
+        border: "border-green-500",
+        borderSeparator: "border-green-200",
+      };
+    }
+    return {
+      background: "bg-blue-50",
+      border: "border-blue-500",
+      borderSeparator: "border-blue-200",
+    };
+  };
+
+  const colors = getSelectionColors();
+
   return (
     <>
       <div ref={containerRef} className="relative overflow-hidden rounded-lg">
-        {!isDeleting && (
+        {!isDeleting && !selectionMode && (
           <motion.div
             style={{ backgroundColor, opacity: backgroundOpacity }}
             className="absolute inset-0 flex items-center justify-between px-8"
@@ -185,7 +209,7 @@ export function SwipeableNoteCard({
         )}
 
         <motion.div
-          drag={isDeleting ? false : "x"}
+          drag={isDeleting || selectionMode ? false : "x"}
           dragElastic={0.2}
           dragMomentum={false}
           style={{ x, opacity, height }}
@@ -193,45 +217,78 @@ export function SwipeableNoteCard({
           onDragEnd={handleDragEnd}
           onClick={handleClick}
           className={
-            isDeleting
-              ? "relative z-10"
+            isDeleting || selectionMode
+              ? "relative z-10 cursor-pointer"
               : "cursor-grab active:cursor-grabbing relative z-10"
           }
         >
-          {isDeleting ? (
-            <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-              <div className="flex items-start gap-4">
-                {/* Avatar skeleton */}
-                <Skeleton className="h-12 w-12 rounded-full flex-shrink-0" />
+          {shouldShowSkeleton ? (
+            <div
+              className={`${colors.background} border-2 ${colors.border} rounded-lg shadow-sm overflow-hidden`}
+            >
+              <div className="p-6">
+                <div className="flex items-start gap-4">
+                  {/* Avatar skeleton */}
+                  <Skeleton className="h-12 w-12 rounded-full shrink-0" />
 
-                {/* Content skeleton */}
-                <div className="flex-1 space-y-3">
-                  {/* Title */}
-                  <Skeleton className="h-5 w-2/3" />
+                  {/* Content skeleton */}
+                  <div className="flex-1 min-w-0 space-y-3">
+                    {/* Title */}
+                    <Skeleton className="h-5 w-2/3" />
 
-                  {/* Description */}
-                  <Skeleton className="h-4 w-full" />
+                    {/* Description */}
+                    <Skeleton className="h-4 w-full" />
 
-                  {/* Date info */}
-                  <div className="flex items-center gap-4 pt-1">
-                    <Skeleton className="h-3 w-32" />
-                    <Skeleton className="h-3 w-40" />
+                    {/* Date info */}
+                    <div className="flex items-center gap-4 pt-1">
+                      <Skeleton className="h-3 w-32" />
+                      <Skeleton className="h-3 w-40" />
+                    </div>
                   </div>
+
+                  {/* Badge skeleton */}
+                  <Skeleton className="h-6 w-16 rounded-full shrink-0" />
                 </div>
 
-                {/* Badge skeleton */}
-                <Skeleton className="h-6 w-16 rounded-full flex-shrink-0" />
+                {/* Link skeleton (if present) */}
+                {note.link && (
+                  <div
+                    className={`mt-3 pt-3 border-t ${colors.borderSeparator}`}
+                  >
+                    <Skeleton className="h-4 w-48" />
+                  </div>
+                )}
               </div>
-
-              {/* Link skeleton (if present) */}
-              {note.link && (
-                <div className="mt-3 pt-3 border-t">
-                  <Skeleton className="h-4 w-48" />
+            </div>
+          ) : isDeleting ? (
+            <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+              <div className="p-6">
+                <div className="flex items-start gap-4">
+                  <Skeleton className="h-12 w-12 rounded-full shrink-0" />
+                  <div className="flex-1 min-w-0 space-y-3">
+                    <Skeleton className="h-5 w-2/3" />
+                    <Skeleton className="h-4 w-full" />
+                    <div className="flex items-center gap-4 pt-1">
+                      <Skeleton className="h-3 w-32" />
+                      <Skeleton className="h-3 w-40" />
+                    </div>
+                  </div>
+                  <Skeleton className="h-6 w-16 rounded-full shrink-0" />
                 </div>
-              )}
+                {note.link && (
+                  <div className="mt-3 pt-3 border-t">
+                    <Skeleton className="h-4 w-48" />
+                  </div>
+                )}
+              </div>
             </div>
           ) : (
-            <NoteCard note={note} />
+            <div className="relative">
+              {selectionMode && !isSelected && (
+                <div className="absolute inset-0 bg-gray-100 opacity-30 rounded-lg pointer-events-none" />
+              )}
+              <NoteCard note={note} />
+            </div>
           )}
         </motion.div>
       </div>
