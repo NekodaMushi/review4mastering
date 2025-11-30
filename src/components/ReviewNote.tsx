@@ -1,31 +1,8 @@
 "use client";
 
-import { note, ReviewStage } from "@prisma/client";
-import { useState } from "react";
-
-const stageLabels: Record<ReviewStage, string> = {
-  TEN_MINUTES: "10 minutes",
-  ONE_DAY: "1 day",
-  SEVEN_DAYS: "7 days",
-  ONE_MONTH: "1 month",
-  THREE_MONTHS: "3 months",
-  ONE_YEAR: "1 year",
-  TWO_YEARS: "2 years",
-  FIVE_YEARS: "5 years",
-  COMPLETED: "Completed",
-};
-
-const stageBgColor: Record<ReviewStage, string> = {
-  TEN_MINUTES: "bg-red-100 text-red-800",
-  ONE_DAY: "bg-orange-100 text-orange-800",
-  SEVEN_DAYS: "bg-yellow-100 text-yellow-800",
-  ONE_MONTH: "bg-blue-100 text-blue-800",
-  THREE_MONTHS: "bg-purple-100 text-purple-800",
-  ONE_YEAR: "bg-indigo-100 text-indigo-800",
-  TWO_YEARS: "bg-pink-100 text-pink-800",
-  FIVE_YEARS: "bg-green-100 text-green-800",
-  COMPLETED: "bg-gray-100 text-gray-800",
-};
+import { note } from "@prisma/client";
+import { stageLabels, stageBgColor } from "@/lib/constants/noteStages";
+import { useReviewAction } from "@/lib/hooks/useReviewAction";
 
 interface ReviewNoteProps {
   note: note | null;
@@ -40,8 +17,7 @@ export function ReviewNote({
   onClose,
   onActionComplete,
 }: ReviewNoteProps) {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { handleAction, loading, error } = useReviewAction();
 
   if (!isOpen || !note) return null;
 
@@ -50,28 +26,11 @@ export function ReviewNote({
   const stageColor = stageBgColor[currentStage];
   const stageLabel = stageLabels[currentStage];
 
-  const handleAction = async (action: "weak" | "again" | "good") => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const response = await fetch(`/api/notes/${note.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action }),
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || "Failed to update note");
-      }
-
+  const handleButtonClick = async (action: "weak" | "again" | "good") => {
+    const success = await handleAction(note.id, action);
+    if (success) {
       onActionComplete();
       onClose();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -137,31 +96,31 @@ export function ReviewNote({
           </button>
 
           <button
-            onClick={() => handleAction("weak")}
+            onClick={() => handleButtonClick("weak")}
             disabled={loading || isFirstStage}
             className="px-4 py-2 rounded-md bg-red-500 text-white hover:bg-red-600
                        disabled:opacity-50 disabled:cursor-not-allowed"
             title={isFirstStage ? "Cannot go back from first stage" : ""}
           >
-            Weak
+            {loading ? "..." : "Weak"}
           </button>
 
           <button
-            onClick={() => handleAction("again")}
+            onClick={() => handleButtonClick("again")}
             disabled={loading}
             className="px-4 py-2 rounded-md bg-yellow-500 text-white hover:bg-yellow-600
                        disabled:opacity-50"
           >
-            Again
+            {loading ? "..." : "Again"}
           </button>
 
           <button
-            onClick={() => handleAction("good")}
+            onClick={() => handleButtonClick("good")}
             disabled={loading}
             className="px-4 py-2 rounded-md bg-green-500 text-white hover:bg-green-600
                        disabled:opacity-50"
           >
-            Good
+            {loading ? "..." : "Good"}
           </button>
         </div>
       </div>

@@ -5,6 +5,7 @@ import { note } from "@prisma/client";
 import { AddNote } from "@/components/AddNote";
 import { ReviewNote } from "@/components/ReviewNote";
 import { SwipeableNoteCard } from "@/components/SwipeableNoteCard";
+import { NotificationPanel } from "@/components/NotificationPanel";
 
 export default function NotesPage() {
   const [notes, setNotes] = useState<note[]>([]);
@@ -12,6 +13,7 @@ export default function NotesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedNote, setSelectedNote] = useState<note | null>(null);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [isNotificationPanelOpen, setIsNotificationPanelOpen] = useState(false);
 
   const fetchNotes = async () => {
     try {
@@ -62,6 +64,7 @@ export default function NotesPage() {
       console.error(err);
     }
   };
+
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-6xl mx-auto">
@@ -69,12 +72,20 @@ export default function NotesPage() {
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900">My Notes</h1>
           {hasNotes && (
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-medium"
-            >
-              + Add Note
-            </button>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setIsNotificationPanelOpen(true)}
+                className="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 font-medium"
+              >
+                🔔 Notifications
+              </button>
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-medium"
+              >
+                + Add Note
+              </button>
+            </div>
           )}
         </div>
 
@@ -121,6 +132,11 @@ export default function NotesPage() {
         isOpen={isReviewModalOpen}
         onClose={() => setIsReviewModalOpen(false)}
         onActionComplete={handleReviewComplete}
+      />
+
+      <NotificationPanel
+        isOpen={isNotificationPanelOpen}
+        onClose={() => setIsNotificationPanelOpen(false)}
       />
     </div>
   );

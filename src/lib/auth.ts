@@ -9,5 +9,11 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
   },
+  // Test config
+  /* 
+  trustedOrigins: [
+    "http://localhost:3000",
+    "http://192.168.0.103:3000",
+  ],*/
  
 });

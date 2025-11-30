@@ -1,35 +1,66 @@
+import { prisma } from "@/lib/prisma";
+
 interface NtfyParams {
   title: string;
   body: string;
   userId: string;
+  noteId?: string;
   priority?: 1 | 2 | 3 | 4 | 5;
-  tags?: string[]; 
+  tags?: string[];
+}
+
+interface NtfyPayload {
+  topic: string;
+  title: string;
+  message: string;
+  priority: number;
+  tags: string[];
+  click?: string;
 }
 
 export async function sendNtfyNotification({
   title,
   body,
   userId,
+  noteId,
   priority = 3,
   tags = ["clipboard"],
 }: NtfyParams) {
-  const ntfyServer = process.env.NTFY_BASE_URL || "https://ntfy.sh";
-  const topic = `review_${userId}`;
+  const ntfyServer = process.env.NTFY_BASE_URL || "https://ntfy.nekagentic.fr";
+  const appBaseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://192.168.0.103:3000";
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { ntfyTopic: true },
+  });
+
+  if (!user?.ntfyTopic) {
+    console.warn(`⚠️ No ntfy topic configured for user ${userId}`);
+    return;
+  }
 
   try {
-    console.log(`📡 Sending ntfy to ${ntfyServer}/${topic}`);
+    console.log(`📡 Sending ntfy to ${ntfyServer}`);
 
-    const response = await fetch(`${ntfyServer}/${topic}`, {
+    const payload: NtfyPayload = {
+      topic: user.ntfyTopic,
+      title: title,
+      message: body,
+      priority: priority,
+      tags: tags,
+    };
+
+    // link on notification click
+    if (noteId) {
+      payload.click = `${appBaseUrl}/notes/${noteId}`;
+    }
+
+    const response = await fetch(ntfyServer, {
       method: "POST",
-      body: body,
       headers: {
-        Title: title,
-        Priority: priority.toString(),
-        Tags: tags.join(","),
-        ...(process.env.NTFY_SERVER_TOKEN && {
-          Authorization: `Bearer ${process.env.NTFY_SERVER_TOKEN}`,
-        }),
+        "Content-Type": "application/json",
       },
+      body: JSON.stringify(payload),
     });
 
     if (!response.ok) {

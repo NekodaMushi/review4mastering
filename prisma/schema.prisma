@@ -53,6 +53,8 @@ model User {
   accounts      Account[]
   notes         note[]
 
+  ntfyTopic String? @map("ntfy_topic")
+
   @@map("user")
 }
 
