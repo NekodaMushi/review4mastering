@@ -3,13 +3,32 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { note } from "@prisma/client";
-import { ArrowLeftIcon, Bell, Plus } from "lucide-react";
+import {
+  ArrowLeftIcon,
+  Bell,
+  Plus,
+  MoreVertical,
+  CheckCheck,
+  Archive,
+  Clock,
+  Calendar,
+  List,
+  Tag,
+  Trash2,
+} from "lucide-react";
 import { AddNote } from "@/components/AddNote";
 import { ReviewNote } from "@/components/ReviewNote";
 import { SwipeableNoteCard } from "@/components/SwipeableNoteCard";
 import { NotificationPanel } from "@/components/NotificationPanel";
 import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default function NotesPage() {
   const router = useRouter();
@@ -101,6 +120,43 @@ export default function NotesPage() {
                   <Plus className="mr-2 h-4 w-4" />
                   Add Note
                 </Button>
+
+                {/* Menu Dropdown */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      aria-label="More options"
+                    >
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem>
+                      <CheckCheck className="mr-2 h-4 w-4" />
+                      Mark as all Reviewed
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Clock className="mr-2 h-4 w-4" />
+                      Snooze all
+                    </DropdownMenuItem>
+
+                    <DropdownMenuSeparator />
+
+                    <DropdownMenuItem className="">
+                      <Archive className="mr-2 h-4 w-4 text-green-700" />
+                      Archive notes
+                    </DropdownMenuItem>
+
+                    <DropdownMenuSeparator />
+
+                    <DropdownMenuItem className="">
+                      <Trash2 className="mr-2 h-4 w-4 text-red-600" />
+                      Trash notes
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </ButtonGroup>
             ) : (
               <ButtonGroup className="w-fit">

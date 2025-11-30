@@ -138,3 +138,48 @@ export async function PATCH(
     );
   }
 }
+
+export async function DELETE(
+  req: Request,
+  context: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await context.params;
+
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session) {
+      return Response.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const note = await prisma.note.findUnique({
+      where: { id },
+      select: { user_id: true },
+    });
+
+    if (!note) {
+      return Response.json({ error: "Note not found" }, { status: 404 });
+    }
+
+    if (note.user_id !== session.user.id) {
+      return Response.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    await prisma.note.delete({
+      where: { id },
+    });
+
+    return Response.json(
+      { success: true, message: "Note deleted successfully" },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error deleting note:", error);
+    return Response.json(
+      { error: "Failed to delete note" },
+      { status: 500 }
+    );
+  }
+}

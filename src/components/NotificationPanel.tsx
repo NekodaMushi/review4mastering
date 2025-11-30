@@ -79,7 +79,7 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex gap-3">
               <AlertCircle
                 size={20}
-                className="text-blue-600 flex-shrink-0 mt-0.5"
+                className="text-blue-600 shrink-0 mt-0.5"
               />
               <p className="text-sm text-blue-900">
                 Follow these steps to set up push notifications in the ntfy
@@ -182,7 +182,7 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
                     </code>
                     <button
                       onClick={() => handleCopy(data.password, "password")}
-                      className="p-1.5 hover:bg-gray-200 rounded transition flex-shrink-0"
+                      className="p-1.5 hover:bg-gray-200 rounded transition shrink-0"
                       title="Copy"
                     >
                       {copiedField === "password" ? (

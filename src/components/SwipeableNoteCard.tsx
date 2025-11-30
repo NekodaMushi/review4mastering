@@ -11,6 +11,17 @@ import {
 } from "framer-motion";
 import { NoteCard } from "./NoteCard";
 import { Trash2, Archive } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface SwipeableNoteCardProps {
   note: note;
@@ -31,6 +42,11 @@ export function SwipeableNoteCard({
   const containerRef = useRef<HTMLDivElement>(null);
   const isDraggingRef = useRef(false);
   const [containerWidth, setContainerWidth] = useState(0);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [pendingAction, setPendingAction] = useState<
+    "delete" | "archive" | null
+  >(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (containerRef.current) {
@@ -82,11 +98,16 @@ export function SwipeableNoteCard({
     }
 
     if (info.offset.x < -swipeThreshold) {
-      await animateOut("left");
-      onArchive?.(note.id);
+      setPendingAction("delete");
+      setIsDeleteDialogOpen(true);
+      await animate(x, 0, {
+        type: "spring",
+        stiffness: 300,
+        damping: 30,
+      });
     } else if (info.offset.x > swipeThreshold) {
       await animateOut("right");
-      onDelete?.(note.id);
+      onArchive?.(note.id);
     } else {
       await animate(x, 0, {
         type: "spring",
@@ -96,8 +117,38 @@ export function SwipeableNoteCard({
     }
   };
 
+  const handleConfirmDelete = async () => {
+    setIsDeleting(true);
+    setIsDeleteDialogOpen(false);
+
+    try {
+      const response = await fetch(`/api/notes/${note.id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete note");
+      }
+
+      await animateOut("left");
+      onDelete?.(note.id);
+      setPendingAction(null);
+    } catch (error) {
+      console.error("Error deleting note:", error);
+      alert("Error during deletion");
+      setPendingAction(null);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setIsDeleteDialogOpen(false);
+    setPendingAction(null);
+  };
+
   const handleClick = () => {
-    if (!isDraggingRef.current) {
+    if (!isDraggingRef.current && !isDeleting) {
       onClick?.(note);
     }
   };
@@ -121,27 +172,99 @@ export function SwipeableNoteCard({
   };
 
   return (
-    <div ref={containerRef} className="relative overflow-hidden rounded-lg">
-      <motion.div
-        style={{ backgroundColor, opacity: backgroundOpacity }}
-        className="absolute inset-0 flex items-center justify-between px-8"
-      >
-        <Archive className="text-white" size={28} />
-        <Trash2 className="text-white" size={28} />
-      </motion.div>
+    <>
+      <div ref={containerRef} className="relative overflow-hidden rounded-lg">
+        {!isDeleting && (
+          <motion.div
+            style={{ backgroundColor, opacity: backgroundOpacity }}
+            className="absolute inset-0 flex items-center justify-between px-8"
+          >
+            <Archive className="text-white" size={28} />
+            <Trash2 className="text-white" size={28} />
+          </motion.div>
+        )}
 
-      <motion.div
-        drag="x"
-        dragElastic={0.2}
-        dragMomentum={false}
-        style={{ x, opacity, height }}
-        onDragStart={handleDragStart}
-        onDragEnd={handleDragEnd}
-        onClick={handleClick}
-        className="cursor-grab active:cursor-grabbing relative z-10"
+        <motion.div
+          drag={isDeleting ? false : "x"}
+          dragElastic={0.2}
+          dragMomentum={false}
+          style={{ x, opacity, height }}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+          onClick={handleClick}
+          className={
+            isDeleting
+              ? "relative z-10"
+              : "cursor-grab active:cursor-grabbing relative z-10"
+          }
+        >
+          {isDeleting ? (
+            <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+              <div className="flex items-start gap-4">
+                {/* Avatar skeleton */}
+                <Skeleton className="h-12 w-12 rounded-full flex-shrink-0" />
+
+                {/* Content skeleton */}
+                <div className="flex-1 space-y-3">
+                  {/* Title */}
+                  <Skeleton className="h-5 w-2/3" />
+
+                  {/* Description */}
+                  <Skeleton className="h-4 w-full" />
+
+                  {/* Date info */}
+                  <div className="flex items-center gap-4 pt-1">
+                    <Skeleton className="h-3 w-32" />
+                    <Skeleton className="h-3 w-40" />
+                  </div>
+                </div>
+
+                {/* Badge skeleton */}
+                <Skeleton className="h-6 w-16 rounded-full flex-shrink-0" />
+              </div>
+
+              {/* Link skeleton (if present) */}
+              {note.link && (
+                <div className="mt-3 pt-3 border-t">
+                  <Skeleton className="h-4 w-48" />
+                </div>
+              )}
+            </div>
+          ) : (
+            <NoteCard note={note} />
+          )}
+        </motion.div>
+      </div>
+
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
       >
-        <NoteCard note={note} />
-      </motion.div>
-    </div>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action will permanently delete the note. This action cannot
+              be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              onClick={handleCancelDelete}
+              disabled={isDeleting}
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              disabled={isDeleting}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {isDeleting ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
