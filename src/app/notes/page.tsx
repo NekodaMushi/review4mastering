@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { note } from "@prisma/client";
 import { AddNote } from "@/components/AddNote";
 import { ReviewNote } from "@/components/ReviewNote";
@@ -8,6 +9,7 @@ import { SwipeableNoteCard } from "@/components/SwipeableNoteCard";
 import { NotificationPanel } from "@/components/NotificationPanel";
 
 export default function NotesPage() {
+  const router = useRouter();
   const [notes, setNotes] = useState<note[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -71,22 +73,30 @@ export default function NotesPage() {
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900">My Notes</h1>
-          {hasNotes && (
-            <div className="flex gap-3">
-              <button
-                onClick={() => setIsNotificationPanelOpen(true)}
-                className="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 font-medium"
-              >
-                🔔 Notifications
-              </button>
-              <button
-                onClick={() => setIsModalOpen(true)}
-                className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-medium"
-              >
-                + Add Note
-              </button>
-            </div>
-          )}
+          <div className="flex gap-3">
+            <button
+              onClick={() => router.push("/dashboard")}
+              className="px-6 py-3 bg-pink-700 text-white rounded-lg hover:bg-pink-600 font-medium"
+            >
+              ← Dashboard
+            </button>
+            {hasNotes && (
+              <>
+                <button
+                  onClick={() => setIsNotificationPanelOpen(true)}
+                  className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-400 font-medium"
+                >
+                  🔔 Notifications
+                </button>
+                <button
+                  onClick={() => setIsModalOpen(true)}
+                  className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-500 font-medium"
+                >
+                  + Add Note
+                </button>
+              </>
+            )}
+          </div>
         </div>
 
         {/* Notes Grid */}
