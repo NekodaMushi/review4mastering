@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { z } from "zod";
+import { scheduleReviewNotification } from "@/lib/reviewQueue";
 
 const createNoteSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -34,6 +35,7 @@ export async function POST(req: Request) {
         next_review: nextReview,
       },
     });
+    await scheduleReviewNotification(note.id, note.next_review);
 
     return Response.json(note, { status: 201 });
 } catch (error) {

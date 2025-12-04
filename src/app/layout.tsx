@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { reviewQueue, rescheduleAllPendingReviews } from "@/lib/reviewQueue";
+import { reviewQueue, rescheduleAllReviews } from "@/lib/reviewQueue";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
 if (typeof window === "undefined") {
   reviewQueue.resume().then(async () => {
     console.log("✅ Review queue started");
-    await rescheduleAllPendingReviews();
+    await rescheduleAllReviews();
   });
 }
 
