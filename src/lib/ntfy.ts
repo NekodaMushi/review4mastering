@@ -41,11 +41,11 @@ export async function sendNtfyNotification({
 
   try {
     console.log(`📡 Sending ntfy to ${ntfyServer}`);
-//user.ntfyTopic
+
     const payload: NtfyPayload = {
-      topic: appBaseUrl,
+      topic: user.ntfyTopic,
       title: title,
-      message: body,
+      message: appBaseUrl,
       priority: priority,
       tags: tags,
     };
