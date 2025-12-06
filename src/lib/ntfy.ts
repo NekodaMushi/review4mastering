@@ -41,9 +41,9 @@ export async function sendNtfyNotification({
 
   try {
     console.log(`📡 Sending ntfy to ${ntfyServer}`);
-
+//user.ntfyTopic
     const payload: NtfyPayload = {
-      topic: user.ntfyTopic,
+      topic: appBaseUrl,
       title: title,
       message: body,
       priority: priority,
