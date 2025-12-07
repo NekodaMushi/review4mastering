@@ -1,6 +1,8 @@
 "use client";
 
 import { note } from "@prisma/client";
+import { useRouter } from "next/navigation";
+import { ArrowLeftIcon } from "lucide-react";
 import { getReviewStatus } from "@/lib/utils/review";
 import { useReviewAction } from "@/lib/hooks/useReviewAction";
 
@@ -9,6 +11,7 @@ interface NotePageClientProps {
 }
 
 export function NotePageClient({ note }: NotePageClientProps) {
+  const router = useRouter();
   const reviewStatus = getReviewStatus(note.next_review, note.current_stage);
   const { handleAction, loading, error } = useReviewAction();
   const isFirstStage = (note.current_stage || "TEN_MINUTES") === "TEN_MINUTES";
@@ -16,6 +19,14 @@ export function NotePageClient({ note }: NotePageClientProps) {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
       <div className="container mx-auto px-4 max-w-3xl">
+        <button
+          onClick={() => router.push("/notes")}
+          className="mb-6 flex items-center gap-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 transition-colors"
+        >
+          <ArrowLeftIcon className="h-5 w-5" />
+          <span>Back to notes</span>
+        </button>
+
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
           <div className="flex justify-between items-start mb-6">
             <h1 className="text-3xl font-bold">{note.name}</h1>

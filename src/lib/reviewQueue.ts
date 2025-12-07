@@ -26,7 +26,7 @@ function getOverdueMessage(
 } {
   if (minutesLate < 60) {
     return {
-      title: "⏰ Révision en retard",
+      title: `⏰ ${noteName}`,
       body: `Hey, ça fait plus de ${Math.round(
         minutesLate
       )} minutes que tu devais réviser "${noteName}" !`,
@@ -35,15 +35,15 @@ function getOverdueMessage(
   } else if (minutesLate < 1440) {
     const hours = Math.round(minutesLate / 60);
     return {
-      title: "⚠️ Révision en retard",
-      body: `Hello buddy, ça fait ${hours}h que tu devais réviser "${noteName}" !`,
+      title: `⚠️ ${noteName}`,
+      body: `Hello buddy, ça fait ${hours}h que tu devais réviser cette note!`,
       priority: 4,
     };
   } else if (minutesLate < 10080) {
     const days = Math.round(minutesLate / 1440);
     return {
-      title: "🔴 Révision très en retard",
-      body: `Oublie pas que tu dois réviser "${noteName}" depuis ${days} jour${
+      title: `🔴 ${noteName}`,
+      body: `Oublie pas que tu dois réviser cette note depuis ${days} jour${
         days > 1 ? "s" : ""
       } !`,
       priority: 5,
@@ -51,8 +51,8 @@ function getOverdueMessage(
   } else if (minutesLate < 43200) {
     const weeks = Math.round(minutesLate / 10080);
     return {
-      title: "🚨 Révision critique",
-      body: `Il y a ${weeks} semaine${weeks > 1 ? "s" : ""} déjà que tu devais réviser "${noteName}"...`,
+      title: `🚨 ${noteName}`,
+      body: `Il y a ${weeks} semaine${weeks > 1 ? "s" : ""} déjà que tu devais réviser"...`,
       priority: 5,
     };
   } else {
