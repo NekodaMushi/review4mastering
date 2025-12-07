@@ -45,7 +45,7 @@ export async function sendNtfyNotification({
     const payload: NtfyPayload = {
       topic: user.ntfyTopic,
       title: title,
-      message: appBaseUrl,
+      message: body,
       priority: priority,
       tags: tags,
     };
