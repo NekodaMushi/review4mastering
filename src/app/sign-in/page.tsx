@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "@/lib/auth-client";
 import { EyeToggleBtn } from "@/components/ui/EyeToggleBtn";
+import Link from "next/link";
 
 export default function SignInPage() {
   const router = useRouter();
@@ -38,7 +39,7 @@ export default function SignInPage() {
 
       {error && <p className="text-red-500">{error}</p>}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="w-full space-y-4">
         <input
           name="email"
           type="email"
@@ -49,7 +50,7 @@ export default function SignInPage() {
         <div className="relative">
           <input
             name="password"
-            type={showPassword ? "test" : "password"}
+            type={showPassword ? "text" : "password"}
             placeholder="Password"
             required
             className="w-full rounded-md bg-neutral-900 border border-neutral-700 px-3 py-2"
@@ -67,6 +68,20 @@ export default function SignInPage() {
           Sign In
         </button>
       </form>
+
+      <Link
+        href="/forgot-password"
+        className="text-sm text-neutral-400 hover:text-white transition-colors"
+      >
+        Password forgotten ?
+      </Link>
+
+      <p className="text-sm text-neutral-400">
+        No account yet ?{" "}
+        <Link href="/sign-up" className="text-white hover:underline">
+          Sign Up
+        </Link>
+      </p>
     </main>
   );
 }
