@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { forgetPassword } from "@/lib/auth-client";
+import { requestPasswordReset } from "@/lib/auth-client";
 import Link from "next/link";
 import { getErrorMessage } from "@/lib/utils/error-handler";
 
@@ -17,7 +17,7 @@ export default function ForgotPasswordPage() {
     setLoading(true);
 
     try {
-      await forgetPassword({
+      await requestPasswordReset({
         email,
         redirectTo: `${window.location.origin}/reset-password`,
       });

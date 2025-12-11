@@ -2,19 +2,20 @@ import { Resend } from 'resend';
 
 let resendClient: Resend | null = null;
 
+
 function getResendClient(): Resend {
   if (!resendClient) {
     const apiKey = process.env.RESEND_API_KEY;
-
+    
     if (!apiKey) {
       throw new Error(
         'RESEND_API_KEY is not defined. Check your environment variables.'
       );
     }
-
+    
     resendClient = new Resend(apiKey);
   }
-
+  
   return resendClient;
 }
 
@@ -24,12 +25,12 @@ export async function sendEmail({
   text,
   html,
 }: {
-  to: string,
-  subject: string,
-  text: string,
-  html?: string,
-}) {
-
+    to: string,
+    subject: string,
+    text: string,
+    html?: string,
+  }) {
+  
   const resend = getResendClient();
 
   const { data, error } = await resend.emails.send({
@@ -38,7 +39,7 @@ export async function sendEmail({
     subject,
     text,
     html: html || text,
-
+    
   });
 
   if (error) {
