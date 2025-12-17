@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { ArrowLeftIcon } from "lucide-react";
 import { getReviewStatus } from "@/lib/utils/review";
 import { useReviewAction } from "@/lib/hooks/useReviewAction";
+import { Spinner } from "@/components/ui/spinner";
+import { useState } from "react";
 
 interface NotePageClientProps {
   note: note;
@@ -15,6 +17,13 @@ export function NotePageClient({ note }: NotePageClientProps) {
   const reviewStatus = getReviewStatus(note.next_review, note.current_stage);
   const { handleAction, loading, error } = useReviewAction();
   const isFirstStage = (note.current_stage || "TEN_MINUTES") === "TEN_MINUTES";
+  const [activeButton, setActiveButton] = useState<string | null>(null);
+
+  const handleButtonClick = async (action: "weak" | "again" | "good") => {
+    setActiveButton(action);
+    await handleAction(note.id, action);
+    setActiveButton(null);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
@@ -79,31 +88,40 @@ export function NotePageClient({ note }: NotePageClientProps) {
           {reviewStatus.showReviewButtons && (
             <div className="flex gap-3 mt-8">
               <button
-                onClick={() => handleAction(note.id, "weak")}
+                onClick={() => handleButtonClick("weak")}
                 disabled={loading || isFirstStage}
                 className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600
-                           disabled:opacity-50 disabled:cursor-not-allowed"
+                           disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 title={isFirstStage ? "Cannot go back from first stage" : ""}
               >
-                {loading ? "..." : "Weak"}
+                {loading && activeButton === "weak" ? (
+                  <Spinner className="text-white" />
+                ) : null}
+                Weak
               </button>
 
               <button
-                onClick={() => handleAction(note.id, "again")}
+                onClick={() => handleButtonClick("again")}
                 disabled={loading}
                 className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600
-                           disabled:opacity-50"
+                           disabled:opacity-50 flex items-center gap-2"
               >
-                {loading ? "..." : "Again"}
+                {loading && activeButton === "again" ? (
+                  <Spinner className="text-white" />
+                ) : null}
+                Again
               </button>
 
               <button
-                onClick={() => handleAction(note.id, "good")}
+                onClick={() => handleButtonClick("good")}
                 disabled={loading}
                 className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600
-                           disabled:opacity-50"
+                           disabled:opacity-50 flex items-center gap-2"
               >
-                {loading ? "..." : "Good"}
+                {loading && activeButton === "good" ? (
+                  <Spinner className="text-white" />
+                ) : null}
+                Good
               </button>
             </div>
           )}

@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useSession, signOut } from "@/lib/auth-client";
 import { useEffect } from "react";
+import { LifeLine } from "react-loading-indicators";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -15,9 +16,18 @@ export default function DashboardPage() {
   }, [isPending, session, router]);
 
   if (isPending)
-    return <p className="text-center mt-8 text-white">Loading...</p>;
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <LifeLine color="#3b82f6" size="medium" text="" textColor="" />
+      </div>
+    );
+
   if (!session?.user)
-    return <p className="text-center mt-8 text-white">Redirecting...</p>;
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <LifeLine color="#3b82f6" size="medium" text="" textColor="" />
+      </div>
+    );
 
   const { user } = session;
 

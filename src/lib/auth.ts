@@ -7,6 +7,32 @@ export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
+  rateLimit: {
+  enabled: true,
+  window: 60,
+  max: 100, // global limit
+  storage: "database",
+  customRules: {
+    "/request-password-reset": {
+      window: 3600,
+      max: 3,
+    },
+    "/reset-password": {
+      window: 3600,
+      max: 5,
+    },
+    "/sign-in/email": {
+      window: 300,
+      max: 5,
+    },
+  },
+  },
+  advanced: {
+    ipAddress: {
+      ipAddressHeaders: ["x-forwarded-for", "x-real-ip"],
+    },
+    useSecureCookies: true,
+  },
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: false,

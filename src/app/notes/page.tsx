@@ -37,6 +37,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { LifeLine } from "react-loading-indicators";
 
 export default function NotesPage() {
   const router = useRouter();
@@ -315,8 +316,10 @@ export default function NotesPage() {
 
         {/* Notes Grid */}
         {loading ? (
-          <div className="text-center py-12">
-            <p className="text-gray-500">Loading notes...</p>
+          <div className="flex justify-center items-center min-h-[60vh]">
+            <div style={{ color: "#3b82f6" }}>
+              <LifeLine color="#3b82f6" size="medium" text="" textColor="" />
+            </div>
           </div>
         ) : notes.length === 0 ? (
           <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
