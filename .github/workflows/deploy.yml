@@ -41,7 +41,7 @@ jobs:
           username: deploy
           key: ${{ secrets.DEPLOY_KEY }}
           script: |
-            cd ~/review4mastering
+            cd ~/apps/review4mastering
             git pull
             docker compose pull
             docker compose up -d
