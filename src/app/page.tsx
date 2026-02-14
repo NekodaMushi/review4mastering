@@ -105,29 +105,36 @@ export default function Home() {
           </div>
 
           {/* Mobile timeline (vertical) */}
-          <div className="sm:hidden flex flex-col items-center gap-0">
-            {stages.map((stage, i) => (
-              <motion.div
-                key={stage.label}
-                initial={{ opacity: 0, x: -12 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{
-                  duration: 0.35,
-                  delay: 0.8 + i * 0.08,
-                }}
-                className="flex items-center gap-3"
-              >
-                {i > 0 && (
-                  <div className="absolute w-px h-3 bg-neutral-800 -translate-y-3" />
-                )}
-                <div
-                  className={`w-2 h-2 rounded-full bg-gradient-to-br ${stage.color} shrink-0`}
-                />
-                <span className="text-xs text-neutral-500 font-medium py-1.5">
-                  {stage.label}
-                </span>
-              </motion.div>
-            ))}
+          <div className="sm:hidden relative mx-auto w-fit">
+            {/* Vertical track line through dots */}
+            <div className="absolute left-[5px] top-[13px] bottom-[13px] w-px bg-neutral-800" />
+            <motion.div
+              initial={{ scaleY: 0 }}
+              animate={{ scaleY: 1 }}
+              transition={{ duration: 1.2, delay: 0.8, ease: "easeOut" }}
+              className="absolute left-[5px] top-[13px] bottom-[13px] w-px bg-gradient-to-b from-amber-500/80 via-emerald-500/60 to-amber-400/80 origin-top"
+            />
+            <div className="relative flex flex-col">
+              {stages.map((stage, i) => (
+                <motion.div
+                  key={stage.label}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: 0.35,
+                    delay: 0.8 + i * 0.08,
+                  }}
+                  className="flex items-center gap-4 py-2"
+                >
+                  <div
+                    className={`w-2.5 h-2.5 rounded-full bg-gradient-to-br ${stage.color} shrink-0 ring-2 ring-neutral-950 shadow-lg`}
+                  />
+                  <span className="text-sm text-neutral-400 font-medium">
+                    {stage.label}
+                  </span>
+                </motion.div>
+              ))}
+            </div>
           </div>
         </motion.div>
 
