@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { signUp } from "@/lib/auth-client";
 import { EyeToggleBtn } from "@/components/ui/EyeToggleBtn";
+import Link from "next/link";
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -107,6 +108,13 @@ export default function SignUpPage() {
           Create Account
         </button>
       </form>
+
+      <p className="text-sm text-neutral-400">
+        Already have an account?{" "}
+        <Link href="/sign-in" className="text-white hover:underline">
+          Login
+        </Link>
+      </p>
     </main>
   );
 }
