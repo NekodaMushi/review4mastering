@@ -19,7 +19,6 @@ import { ReviewNote } from "@/components/ReviewNote";
 import { SwipeableNoteCard } from "@/components/SwipeableNoteCard";
 import { NotificationPanel } from "@/components/NotificationPanel";
 import { Button } from "@/components/ui/button";
-import { ButtonGroup } from "@/components/ui/button-group";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -86,7 +85,6 @@ export default function NotesPage() {
         return newSet;
       });
     } else {
-      // Mode normal: ouvrir la modal de review
       setSelectedNote(note);
       setIsReviewModalOpen(true);
     }
@@ -162,114 +160,119 @@ export default function NotesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-6xl mx-auto">
+    <div className="relative min-h-screen bg-neutral-950 text-white overflow-hidden">
+      {/* Ambient gradient background */}
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute top-[-20%] left-1/2 -translate-x-1/2 w-[800px] h-[800px] rounded-full bg-amber-500/[0.04] blur-[120px]" />
+      </div>
+
+      <div className="relative z-10 max-w-6xl mx-auto p-6">
         {/* Header */}
         <div className="mb-8">
           <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
-            <h1 className="text-4xl font-bold text-gray-900">
-              Review4Mastering
-            </h1>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => router.push("/dashboard")}
+                className="text-neutral-500 hover:text-white transition-colors"
+                aria-label="Dashboard"
+              >
+                <ArrowLeftIcon className="h-5 w-5" />
+              </button>
+              <h1 className="font-[family-name:var(--font-sora)] text-2xl sm:text-3xl font-bold">
+                My Notes
+              </h1>
+            </div>
 
-            {hasNotes ? (
-              <ButtonGroup className="w-fit">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  aria-label="Dashboard"
-                  onClick={() => router.push("/dashboard")}
-                >
-                  <ArrowLeftIcon />
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => setIsNotificationPanelOpen(true)}
-                  disabled={!!selectionMode}
-                >
-                  <Bell className="mr-2 h-4 w-4" />
-                  Notifications
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => setIsModalOpen(true)}
-                  disabled={!!selectionMode}
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add Note
-                </Button>
+            <div className="flex items-center gap-2">
+              {hasNotes && (
+                <>
+                  <button
+                    onClick={() => setIsNotificationPanelOpen(true)}
+                    disabled={!!selectionMode}
+                    className="p-2 rounded-lg text-neutral-500 hover:text-white hover:bg-neutral-800/60 transition-colors disabled:opacity-40"
+                    aria-label="Notifications"
+                  >
+                    <Bell className="h-5 w-5" />
+                  </button>
 
-                {/* Menu Dropdown */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      aria-label="More options"
-                      disabled={!!selectionMode}
-                    >
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48">
-                    <DropdownMenuItem>
-                      <CheckCheck className="mr-2 h-4 w-4" />
-                      Mark as all Reviewed
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Clock className="mr-2 h-4 w-4" />
-                      Snooze all
-                    </DropdownMenuItem>
+                  <button
+                    onClick={() => setIsModalOpen(true)}
+                    disabled={!!selectionMode}
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-b from-amber-400 to-amber-500 text-neutral-950 font-semibold text-sm hover:from-amber-300 hover:to-amber-400 transition-all shadow-lg shadow-amber-500/20 disabled:opacity-40"
+                  >
+                    <Plus className="h-4 w-4" />
+                    New Note
+                  </button>
 
-                    <DropdownMenuSeparator />
+                  {/* Menu Dropdown */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        disabled={!!selectionMode}
+                        className="p-2 rounded-lg text-neutral-500 hover:text-white hover:bg-neutral-800/60 transition-colors disabled:opacity-40"
+                        aria-label="More options"
+                      >
+                        <MoreVertical className="h-5 w-5" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48 bg-neutral-900 border-neutral-800 text-neutral-300">
+                      <DropdownMenuItem className="hover:bg-neutral-800 focus:bg-neutral-800">
+                        <CheckCheck className="mr-2 h-4 w-4" />
+                        Mark all Reviewed
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="hover:bg-neutral-800 focus:bg-neutral-800">
+                        <Clock className="mr-2 h-4 w-4" />
+                        Snooze all
+                      </DropdownMenuItem>
 
-                    <DropdownMenuItem
-                      onClick={() => enterSelectionMode("archive")}
-                    >
-                      <Archive className="mr-2 h-4 w-4 text-green-700" />
-                      Archive notes
-                    </DropdownMenuItem>
+                      <DropdownMenuSeparator className="bg-neutral-800" />
 
-                    <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={() => enterSelectionMode("archive")}
+                        className="hover:bg-neutral-800 focus:bg-neutral-800"
+                      >
+                        <Archive className="mr-2 h-4 w-4" />
+                        Archive notes
+                      </DropdownMenuItem>
 
-                    <DropdownMenuItem
-                      onClick={() => enterSelectionMode("delete")}
-                    >
-                      <Trash2 className="mr-2 h-4 w-4 text-red-600" />
-                      Trash notes
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </ButtonGroup>
-            ) : (
-              <ButtonGroup className="w-fit">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  aria-label="Dashboard"
-                  onClick={() => router.push("/dashboard")}
-                >
-                  <ArrowLeftIcon />
-                </Button>
-              </ButtonGroup>
-            )}
+                      <DropdownMenuSeparator className="bg-neutral-800" />
+
+                      <DropdownMenuItem
+                        onClick={() => enterSelectionMode("delete")}
+                        className="hover:bg-neutral-800 focus:bg-neutral-800 text-red-400"
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Delete notes
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </>
+              )}
+            </div>
           </div>
 
           {/* Barre de sélection active */}
           {selectionMode && (
-            <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center justify-between">
+            <div
+              className={`mt-4 rounded-lg p-4 flex items-center justify-between ${
+                selectionMode === "delete"
+                  ? "bg-red-500/10 border border-red-500/30"
+                  : "bg-emerald-500/10 border border-emerald-500/30"
+              }`}
+            >
               <div className="flex items-center gap-3">
                 {selectionMode === "delete" ? (
-                  <Trash2 className="h-5 w-5 text-red-600" />
+                  <Trash2 className="h-5 w-5 text-red-400" />
                 ) : (
-                  <Archive className="h-5 w-5 text-green-700" />
+                  <Archive className="h-5 w-5 text-emerald-400" />
                 )}
                 <div>
-                  <p className="font-medium text-gray-900">
+                  <p className="font-medium text-white">
                     {selectionMode === "delete"
                       ? "Delete Mode"
                       : "Archive Mode"}
                   </p>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-neutral-400">
                     {selectedNotes.size} note
                     {selectedNotes.size !== 1 ? "s" : ""} selected
                   </p>
@@ -281,6 +284,7 @@ export default function NotesPage() {
                   size="sm"
                   onClick={exitSelectionMode}
                   disabled={isProcessing}
+                  className="border-neutral-700 text-neutral-400 hover:bg-neutral-900 hover:text-white"
                 >
                   <X className="mr-2 h-4 w-4" />
                   Cancel
@@ -291,8 +295,8 @@ export default function NotesPage() {
                   disabled={selectedNotes.size === 0 || isProcessing}
                   className={
                     selectionMode === "delete"
-                      ? "bg-red-600 hover:bg-red-700"
-                      : "bg-green-600 hover:bg-green-700"
+                      ? "bg-red-600 hover:bg-red-700 text-white"
+                      : "bg-emerald-600 hover:bg-emerald-700 text-white"
                   }
                 >
                   {isProcessing ? (
@@ -317,18 +321,16 @@ export default function NotesPage() {
         {/* Notes Grid */}
         {loading ? (
           <div className="flex justify-center items-center min-h-[60vh]">
-            <div style={{ color: "#3b82f6" }}>
-              <LifeLine color="#3b82f6" size="medium" text="" textColor="" />
-            </div>
+            <LifeLine color="#f59e0b" size="medium" text="" textColor="" />
           </div>
         ) : notes.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
-            <p className="text-gray-500 text-lg mb-4">
+          <div className="text-center py-16 bg-neutral-900/50 rounded-lg border border-neutral-800">
+            <p className="text-neutral-400 text-lg mb-6">
               No notes yet. Create your first note to get started!
             </p>
             <button
               onClick={() => setIsModalOpen(true)}
-              className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-medium"
+              className="px-6 py-3 bg-gradient-to-b from-amber-400 to-amber-500 text-neutral-950 rounded-lg hover:from-amber-300 hover:to-amber-400 font-semibold text-sm tracking-wide shadow-lg shadow-amber-500/20 transition-all"
             >
               + Add First Note
             </button>
@@ -373,10 +375,10 @@ export default function NotesPage() {
         open={isConfirmDialogOpen}
         onOpenChange={setIsConfirmDialogOpen}
       >
-        <AlertDialogContent>
+        <AlertDialogContent className="bg-neutral-900 border-neutral-800 text-white">
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogDescription className="text-neutral-400">
               {selectionMode === "delete" ? (
                 <>
                   This action will permanently delete {selectedNotes.size} note
@@ -392,7 +394,10 @@ export default function NotesPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isProcessing}>
+            <AlertDialogCancel
+              disabled={isProcessing}
+              className="border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white"
+            >
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
@@ -400,8 +405,8 @@ export default function NotesPage() {
               disabled={isProcessing}
               className={
                 selectionMode === "delete"
-                  ? "bg-red-600 hover:bg-red-700"
-                  : "bg-green-600 hover:bg-green-700"
+                  ? "bg-red-600 hover:bg-red-700 text-white"
+                  : "bg-emerald-600 hover:bg-emerald-700 text-white"
               }
             >
               {isProcessing

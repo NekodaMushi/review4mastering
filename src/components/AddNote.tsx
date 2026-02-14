@@ -73,14 +73,17 @@ export function AddNote({ isOpen, onClose, onNoteCreated }: AddNoteProps) {
 
   if (!isOpen) return null;
 
+  const inputClass =
+    "w-full rounded-lg bg-neutral-800/80 border border-neutral-700 px-4 py-3 text-sm text-white placeholder:text-neutral-500 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 transition-colors";
+
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl shadow-2xl p-6 w-md">
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+      <div className="bg-neutral-900 border border-neutral-800 rounded-xl shadow-2xl p-6 w-md">
         <div className="mb-6">
           {!isEditingTitle ? (
             <h2
               onClick={() => setIsEditingTitle(true)}
-              className="text-2xl font-bold text-gray-300 cursor-pointer hover:text-gray-400 transition"
+              className="font-[family-name:var(--font-sora)] text-2xl font-bold text-neutral-500 cursor-pointer hover:text-neutral-400 transition"
             >
               Add New Note
             </h2>
@@ -92,7 +95,7 @@ export function AddNote({ isOpen, onClose, onNoteCreated }: AddNoteProps) {
               onChange={(e) => setName(e.target.value)}
               onBlur={() => !name && setIsEditingTitle(false)}
               placeholder="Add New Note"
-              className="text-2xl font-bold text-gray-900 placeholder:text-gray-300 
+              className="font-[family-name:var(--font-sora)] text-2xl font-bold text-white placeholder:text-neutral-500
                          w-full outline-none border-none bg-transparent"
             />
           )}
@@ -100,7 +103,7 @@ export function AddNote({ isOpen, onClose, onNoteCreated }: AddNoteProps) {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-800 mb-1">
+            <label className="block text-sm font-medium text-neutral-400 mb-1">
               Description *
             </label>
             <textarea
@@ -108,16 +111,13 @@ export function AddNote({ isOpen, onClose, onNoteCreated }: AddNoteProps) {
               onChange={(e) => setText(e.target.value)}
               placeholder="What do you want to remember about this?"
               rows={5}
-              className="w-full px-3 py-2 rounded-md border border-gray-300
-                         text-gray-900 placeholder:text-gray-400
-                         focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-                         resize-y"
+              className={`${inputClass} resize-y`}
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-800 mb-1">
+            <label className="block text-sm font-medium text-neutral-400 mb-1">
               Link (Optional)
             </label>
             <input
@@ -125,14 +125,12 @@ export function AddNote({ isOpen, onClose, onNoteCreated }: AddNoteProps) {
               value={link}
               onChange={(e) => setLink(e.target.value)}
               placeholder="https://example.com"
-              className="w-full px-3 py-2 rounded-md border border-gray-300
-                         text-gray-900 placeholder:text-gray-400
-                         focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className={inputClass}
             />
           </div>
 
           {error && (
-            <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded">
+            <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm">
               {error}
             </div>
           )}
@@ -141,14 +139,14 @@ export function AddNote({ isOpen, onClose, onNoteCreated }: AddNoteProps) {
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-md border border-gray-300 text-gray-800 hover:bg-gray-50"
+              className="px-4 py-2 rounded-lg border border-neutral-700 text-neutral-400 hover:bg-neutral-800 hover:text-white transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading || !text.trim()}
-              className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700
+              className="px-4 py-2 rounded-lg bg-gradient-to-b from-amber-400 to-amber-500 text-neutral-950 font-semibold hover:from-amber-300 hover:to-amber-400 transition-all shadow-lg shadow-amber-500/20
                          disabled:opacity-60"
             >
               {loading ? "Creating..." : "Add Note"}

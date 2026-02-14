@@ -58,7 +58,7 @@ export function SwipeableNoteCard({
   const backgroundColor = useTransform(
     x,
     [-100, 0, 100],
-    ["rgb(239, 68, 68)", "rgb(255, 255, 255)", "rgb(34, 197, 94)"]
+    ["rgb(239, 68, 68)", "rgb(23, 23, 23)", "rgb(34, 197, 94)"]
   );
 
   const backgroundOpacity = useTransform(
@@ -168,28 +168,26 @@ export function SwipeableNoteCard({
     height.set("0px");
   };
 
-  // Afficher en mode skeleton si sélectionné
   const shouldShowSkeleton = isSelected && selectionMode;
 
-  // Déterminer les couleurs selon le mode
   const getSelectionColors = () => {
     if (selectionMode === "delete") {
       return {
-        background: "bg-red-50",
-        border: "border-red-500",
-        borderSeparator: "border-red-200",
+        background: "bg-red-500/10",
+        border: "border-red-500/30",
+        borderSeparator: "border-red-500/20",
       };
     } else if (selectionMode === "archive") {
       return {
-        background: "bg-green-50",
-        border: "border-green-500",
-        borderSeparator: "border-green-200",
+        background: "bg-emerald-500/10",
+        border: "border-emerald-500/30",
+        borderSeparator: "border-emerald-500/20",
       };
     }
     return {
-      background: "bg-blue-50",
-      border: "border-blue-500",
-      borderSeparator: "border-blue-200",
+      background: "bg-amber-500/10",
+      border: "border-amber-500/30",
+      borderSeparator: "border-amber-500/20",
     };
   };
 
@@ -224,60 +222,48 @@ export function SwipeableNoteCard({
         >
           {shouldShowSkeleton ? (
             <div
-              className={`${colors.background} border-2 ${colors.border} rounded-lg shadow-sm overflow-hidden`}
+              className={`${colors.background} border-2 ${colors.border} rounded-lg overflow-hidden`}
             >
               <div className="p-6">
                 <div className="flex items-start gap-4">
-                  {/* Avatar skeleton */}
-                  <Skeleton className="h-12 w-12 rounded-full shrink-0" />
-
-                  {/* Content skeleton */}
+                  <Skeleton className="h-12 w-12 rounded-full shrink-0 bg-neutral-800" />
                   <div className="flex-1 min-w-0 space-y-3">
-                    {/* Title */}
-                    <Skeleton className="h-5 w-2/3" />
-
-                    {/* Description */}
-                    <Skeleton className="h-4 w-full" />
-
-                    {/* Date info */}
+                    <Skeleton className="h-5 w-2/3 bg-neutral-800" />
+                    <Skeleton className="h-4 w-full bg-neutral-800" />
                     <div className="flex items-center gap-4 pt-1">
-                      <Skeleton className="h-3 w-32" />
-                      <Skeleton className="h-3 w-40" />
+                      <Skeleton className="h-3 w-32 bg-neutral-800" />
+                      <Skeleton className="h-3 w-40 bg-neutral-800" />
                     </div>
                   </div>
-
-                  {/* Badge skeleton */}
-                  <Skeleton className="h-6 w-16 rounded-full shrink-0" />
+                  <Skeleton className="h-6 w-16 rounded-full shrink-0 bg-neutral-800" />
                 </div>
-
-                {/* Link skeleton (if present) */}
                 {note.link && (
                   <div
                     className={`mt-3 pt-3 border-t ${colors.borderSeparator}`}
                   >
-                    <Skeleton className="h-4 w-48" />
+                    <Skeleton className="h-4 w-48 bg-neutral-800" />
                   </div>
                 )}
               </div>
             </div>
           ) : isDeleting ? (
-            <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+            <div className="bg-neutral-900/80 rounded-lg border border-neutral-800 overflow-hidden">
               <div className="p-6">
                 <div className="flex items-start gap-4">
-                  <Skeleton className="h-12 w-12 rounded-full shrink-0" />
+                  <Skeleton className="h-12 w-12 rounded-full shrink-0 bg-neutral-800" />
                   <div className="flex-1 min-w-0 space-y-3">
-                    <Skeleton className="h-5 w-2/3" />
-                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-5 w-2/3 bg-neutral-800" />
+                    <Skeleton className="h-4 w-full bg-neutral-800" />
                     <div className="flex items-center gap-4 pt-1">
-                      <Skeleton className="h-3 w-32" />
-                      <Skeleton className="h-3 w-40" />
+                      <Skeleton className="h-3 w-32 bg-neutral-800" />
+                      <Skeleton className="h-3 w-40 bg-neutral-800" />
                     </div>
                   </div>
-                  <Skeleton className="h-6 w-16 rounded-full shrink-0" />
+                  <Skeleton className="h-6 w-16 rounded-full shrink-0 bg-neutral-800" />
                 </div>
                 {note.link && (
-                  <div className="mt-3 pt-3 border-t">
-                    <Skeleton className="h-4 w-48" />
+                  <div className="mt-3 pt-3 border-t border-neutral-800">
+                    <Skeleton className="h-4 w-48 bg-neutral-800" />
                   </div>
                 )}
               </div>
@@ -285,7 +271,7 @@ export function SwipeableNoteCard({
           ) : (
             <div className="relative">
               {selectionMode && !isSelected && (
-                <div className="absolute inset-0 bg-gray-100 opacity-30 rounded-lg pointer-events-none" />
+                <div className="absolute inset-0 bg-neutral-950 opacity-40 rounded-lg pointer-events-none" />
               )}
               <NoteCard note={note} />
             </div>
@@ -297,10 +283,10 @@ export function SwipeableNoteCard({
         open={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
       >
-        <AlertDialogContent>
+        <AlertDialogContent className="bg-neutral-900 border-neutral-800 text-white">
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogDescription className="text-neutral-400">
               This action will permanently delete the note. This action cannot
               be undone.
             </AlertDialogDescription>
@@ -309,13 +295,14 @@ export function SwipeableNoteCard({
             <AlertDialogCancel
               onClick={handleCancelDelete}
               disabled={isDeleting}
+              className="border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white"
             >
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleConfirmDelete}
               disabled={isDeleting}
-              className="bg-red-600 hover:bg-red-700"
+              className="bg-red-600 hover:bg-red-700 text-white"
             >
               {isDeleting ? "Deleting..." : "Delete"}
             </AlertDialogAction>

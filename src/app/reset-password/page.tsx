@@ -62,80 +62,96 @@ function ResetPasswordForm() {
     }
   };
 
+  const inputClass =
+    "w-full rounded-lg bg-neutral-900/80 border border-neutral-800 pl-4 pr-10 py-3 text-sm placeholder:text-neutral-600 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 transition-colors";
+
   return (
-    <main className="max-w-md h-screen flex items-center justify-center flex-col mx-auto p-6 space-y-4 text-white">
-      <h1 className="text-2xl font-bold">New password</h1>
+    <main className="relative min-h-screen bg-neutral-950 text-white overflow-hidden flex items-center justify-center">
+      {/* Ambient gradient background */}
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute top-[-20%] left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-amber-500/[0.04] blur-[120px]" />
+      </div>
 
-      {error && (
-        <div className="w-full p-3 bg-red-500/10 border border-red-500 rounded-md text-red-500 text-sm">
-          {error}
+      <div className="relative z-10 w-full max-w-md mx-auto px-6 space-y-6">
+        <div className="text-center space-y-2">
+          <h1 className="font-[family-name:var(--font-sora)] text-3xl font-bold">
+            New password
+          </h1>
         </div>
-      )}
 
-      {tokenError === "INVALID_TOKEN" ? (
-        <div className="w-full space-y-4 text-center">
-          <p className="text-neutral-400">The link has expired.</p>
+        {error && (
+          <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm">
+            {error}
+          </div>
+        )}
+
+        {tokenError === "INVALID_TOKEN" ? (
+          <div className="space-y-4 text-center">
+            <p className="text-neutral-400">The link has expired.</p>
+            <Link
+              href="/forgot-password"
+              className="inline-block bg-gradient-to-b from-amber-400 to-amber-500 text-neutral-950 font-semibold rounded-lg px-6 py-3 text-sm tracking-wide hover:from-amber-300 hover:to-amber-400 transition-all shadow-lg shadow-amber-500/20"
+            >
+              Request a new link
+            </Link>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="New password"
+                required
+                minLength={8}
+                className={inputClass}
+              />
+              <EyeToggleBtn
+                pressed={showPassword}
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute inset-y-0 right-3 flex items-center text-neutral-500 hover:text-neutral-300"
+              />
+            </div>
+
+            <div className="relative">
+              <input
+                type={showConfirmPassword ? "text" : "password"}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Confirm password"
+                required
+                minLength={8}
+                className={inputClass}
+              />
+              <EyeToggleBtn
+                pressed={showConfirmPassword}
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute inset-y-0 right-3 flex items-center text-neutral-500 hover:text-neutral-300"
+              />
+            </div>
+
+            <p className="text-xs text-neutral-600">Minimum 8 characters</p>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-gradient-to-b from-amber-400 to-amber-500 text-neutral-950 font-semibold rounded-lg px-4 py-3 text-sm tracking-wide hover:from-amber-300 hover:to-amber-400 transition-all shadow-lg shadow-amber-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? "Resetting..." : "Reset password"}
+            </button>
+          </form>
+        )}
+
+        <div className="text-center">
           <Link
-            href="/forgot-password"
-            className="inline-block bg-white text-black font-medium rounded-md px-4 py-2 hover:bg-gray-200"
+            href="/sign-in"
+            className="text-sm text-neutral-500 hover:text-amber-400 transition-colors"
           >
-            Request a new link
+            ← Back to login
           </Link>
         </div>
-      ) : (
-        <form onSubmit={handleSubmit} className="w-full space-y-4">
-          <div className="relative">
-            <input
-              type={showPassword ? "text" : "password"}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="New password"
-              required
-              minLength={8}
-              className="w-full rounded-md bg-neutral-900 border border-neutral-700 px-3 py-2"
-            />
-            <EyeToggleBtn
-              pressed={showPassword}
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute inset-y-0 right-2 flex items-center text-neutral-400 hover:text-neutral-200"
-            />
-          </div>
-
-          <div className="relative">
-            <input
-              type={showConfirmPassword ? "text" : "password"}
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Confirm password"
-              required
-              minLength={8}
-              className="w-full rounded-md bg-neutral-900 border border-neutral-700 px-3 py-2"
-            />
-            <EyeToggleBtn
-              pressed={showConfirmPassword}
-              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              className="absolute inset-y-0 right-2 flex items-center text-neutral-400 hover:text-neutral-200"
-            />
-          </div>
-
-          <p className="text-xs text-neutral-500">Minimum 8 characters</p>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-white text-black font-medium rounded-md px-4 py-2 hover:bg-gray-200 disabled:opacity-50"
-          >
-            {loading ? "Resetting..." : "Reset password"}
-          </button>
-        </form>
-      )}
-
-      <Link
-        href="/sign-in"
-        className="text-sm text-neutral-400 hover:text-white transition-colors"
-      >
-        ← Back to sign in
-      </Link>
+      </div>
     </main>
   );
 }
@@ -144,7 +160,7 @@ export default function ResetPasswordPage() {
   return (
     <Suspense
       fallback={
-        <div className="h-screen flex items-center justify-center text-white">
+        <div className="min-h-screen bg-neutral-950 flex items-center justify-center text-neutral-500">
           Loading...
         </div>
       }

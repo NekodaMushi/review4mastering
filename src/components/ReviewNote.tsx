@@ -35,19 +35,21 @@ export function ReviewNote({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl shadow-2xl p-8 max-w-2xl w-full mx-4">
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+      <div className="bg-neutral-900 border border-neutral-800 rounded-xl shadow-2xl p-8 max-w-2xl w-full mx-4">
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+          className="absolute top-4 right-4 text-neutral-500 hover:text-white transition-colors"
         >
           ✕
         </button>
 
         {/* Header */}
         <div className="mb-6">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">{note.name}</h2>
+          <h2 className="font-[family-name:var(--font-sora)] text-3xl font-bold text-white mb-2">
+            {note.name}
+          </h2>
           <span
             className={`inline-block px-4 py-1 rounded-full text-sm font-medium ${stageColor}`}
           >
@@ -57,21 +59,21 @@ export function ReviewNote({
 
         {/* Content */}
         <div className="mb-8">
-          <h3 className="text-sm font-semibold text-gray-500 mb-2">
+          <h3 className="text-sm font-semibold text-neutral-500 mb-2">
             Description
           </h3>
-          <p className="text-gray-800 text-lg leading-relaxed mb-4">
+          <p className="text-neutral-300 text-lg leading-relaxed mb-4">
             {note.text}
           </p>
 
           {note.link && (
             <div>
-              <h3 className="text-sm font-semibold text-gray-500 mb-2">Link</h3>
+              <h3 className="text-sm font-semibold text-neutral-500 mb-2">Link</h3>
               <a
                 href={note.link}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-blue-500 hover:underline break-all"
+                className="text-amber-400 hover:text-amber-300 hover:underline break-all transition-colors"
               >
                 {note.link}
               </a>
@@ -81,7 +83,7 @@ export function ReviewNote({
 
         {/* Error */}
         {error && (
-          <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded mb-4">
+          <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm mb-4">
             {error}
           </div>
         )}
@@ -90,7 +92,7 @@ export function ReviewNote({
         <div className="flex gap-3 justify-end">
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-md border border-gray-300 text-gray-800 hover:bg-gray-50"
+            className="px-4 py-2 rounded-lg border border-neutral-700 text-neutral-400 hover:bg-neutral-800 hover:text-white transition-colors"
           >
             Close
           </button>
@@ -98,8 +100,8 @@ export function ReviewNote({
           <button
             onClick={() => handleButtonClick("weak")}
             disabled={loading || isFirstStage}
-            className="px-4 py-2 rounded-md bg-red-500 text-white hover:bg-red-600
-                       disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 rounded-lg bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30
+                       disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             title={isFirstStage ? "Cannot go back from first stage" : ""}
           >
             {loading ? "..." : "Weak"}
@@ -108,8 +110,8 @@ export function ReviewNote({
           <button
             onClick={() => handleButtonClick("again")}
             disabled={loading}
-            className="px-4 py-2 rounded-md bg-yellow-500 text-white hover:bg-yellow-600
-                       disabled:opacity-50"
+            className="px-4 py-2 rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/30 hover:bg-amber-500/30
+                       disabled:opacity-50 transition-colors"
           >
             {loading ? "..." : "Again"}
           </button>
@@ -117,8 +119,8 @@ export function ReviewNote({
           <button
             onClick={() => handleButtonClick("good")}
             disabled={loading}
-            className="px-4 py-2 rounded-md bg-green-500 text-white hover:bg-green-600
-                       disabled:opacity-50"
+            className="px-4 py-2 rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30
+                       disabled:opacity-50 transition-colors"
           >
             {loading ? "..." : "Good"}
           </button>
