@@ -1,15 +1,16 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
+type ReviewPayload =
+  | { action: "weak" | "again" | "good" }
+  | { reviewInDays: number };
+
 export function useReviewAction() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleAction = async (
-    noteId: string,
-    action: "weak" | "again" | "good"
-  ) => {
+  const handleAction = async (noteId: string, payload: ReviewPayload) => {
     setLoading(true);
     setError(null);
 
@@ -17,7 +18,7 @@ export function useReviewAction() {
       const response = await fetch(`/api/notes/${noteId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action }),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {

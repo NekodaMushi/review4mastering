@@ -7,6 +7,7 @@ import { getReviewStatus } from "@/lib/utils/review";
 import { useReviewAction } from "@/lib/hooks/useReviewAction";
 import { Spinner } from "@/components/ui/spinner";
 import { useState } from "react";
+import { ReviewInControl } from "@/components/ReviewInControl";
 
 interface NotePageClientProps {
   note: note;
@@ -21,8 +22,15 @@ export function NotePageClient({ note }: NotePageClientProps) {
 
   const handleButtonClick = async (action: "weak" | "again" | "good") => {
     setActiveButton(action);
-    await handleAction(note.id, action);
+    await handleAction(note.id, { action });
     setActiveButton(null);
+  };
+
+  const handleReviewIn = async (days: number) => {
+    setActiveButton("review_in");
+    const success = await handleAction(note.id, { reviewInDays: days });
+    setActiveButton(null);
+    return success;
   };
 
   return (
@@ -92,44 +100,50 @@ export function NotePageClient({ note }: NotePageClientProps) {
             </div>
           )}
 
+          <div className="mt-8">
+            <ReviewInControl disabled={loading} onSubmit={handleReviewIn} />
+          </div>
+
           {reviewStatus.showReviewButtons && (
-            <div className="flex gap-3 mt-8">
-              <button
-                onClick={() => handleButtonClick("weak")}
-                disabled={loading || isFirstStage}
-                className="px-4 py-2 bg-red-500/20 text-red-400 border border-red-500/30 rounded-lg hover:bg-red-500/30
-                           disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-colors"
-                title={isFirstStage ? "Cannot go back from first stage" : ""}
-              >
-                {loading && activeButton === "weak" ? (
-                  <Spinner className="text-red-400" />
-                ) : null}
-                Weak
-              </button>
+            <div className="mt-4 flex flex-col gap-4">
+              <div className="flex gap-3">
+                <button
+                  onClick={() => handleButtonClick("weak")}
+                  disabled={loading || isFirstStage}
+                  className="px-4 py-2 bg-red-500/20 text-red-400 border border-red-500/30 rounded-lg hover:bg-red-500/30
+                             disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-colors"
+                  title={isFirstStage ? "Cannot go back from first stage" : ""}
+                >
+                  {loading && activeButton === "weak" ? (
+                    <Spinner className="text-red-400" />
+                  ) : null}
+                  Weak
+                </button>
 
-              <button
-                onClick={() => handleButtonClick("again")}
-                disabled={loading}
-                className="px-4 py-2 bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded-lg hover:bg-amber-500/30
-                           disabled:opacity-50 flex items-center gap-2 transition-colors"
-              >
-                {loading && activeButton === "again" ? (
-                  <Spinner className="text-amber-400" />
-                ) : null}
-                Again
-              </button>
+                <button
+                  onClick={() => handleButtonClick("again")}
+                  disabled={loading}
+                  className="px-4 py-2 bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded-lg hover:bg-amber-500/30
+                             disabled:opacity-50 flex items-center gap-2 transition-colors"
+                >
+                  {loading && activeButton === "again" ? (
+                    <Spinner className="text-amber-400" />
+                  ) : null}
+                  Again
+                </button>
 
-              <button
-                onClick={() => handleButtonClick("good")}
-                disabled={loading}
-                className="px-4 py-2 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-lg hover:bg-emerald-500/30
-                           disabled:opacity-50 flex items-center gap-2 transition-colors"
-              >
-                {loading && activeButton === "good" ? (
-                  <Spinner className="text-emerald-400" />
-                ) : null}
-                Good
-              </button>
+                <button
+                  onClick={() => handleButtonClick("good")}
+                  disabled={loading}
+                  className="px-4 py-2 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-lg hover:bg-emerald-500/30
+                             disabled:opacity-50 flex items-center gap-2 transition-colors"
+                >
+                  {loading && activeButton === "good" ? (
+                    <Spinner className="text-emerald-400" />
+                  ) : null}
+                  Good
+                </button>
+              </div>
             </div>
           )}
 
