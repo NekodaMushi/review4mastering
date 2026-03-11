@@ -3,6 +3,7 @@
 import { note } from "@prisma/client";
 import { stageLabels, stageBgColor } from "@/lib/constants/noteStages";
 import { useReviewAction } from "@/lib/hooks/useReviewAction";
+import { ReviewInControl } from "@/components/ReviewInControl";
 
 interface ReviewNoteProps {
   note: note | null;
@@ -27,11 +28,21 @@ export function ReviewNote({
   const stageLabel = stageLabels[currentStage];
 
   const handleButtonClick = async (action: "weak" | "again" | "good") => {
-    const success = await handleAction(note.id, action);
+    const success = await handleAction(note.id, { action });
     if (success) {
       onActionComplete();
       onClose();
     }
+  };
+
+  const handleReviewIn = async (days: number) => {
+    const success = await handleAction(note.id, { reviewInDays: days });
+    if (success) {
+      onActionComplete();
+      onClose();
+    }
+
+    return success;
   };
 
   return (
@@ -89,41 +100,45 @@ export function ReviewNote({
         )}
 
         {/* Buttons */}
-        <div className="flex gap-3 justify-end">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 rounded-lg border border-neutral-700 text-neutral-400 hover:bg-neutral-800 hover:text-white transition-colors"
-          >
-            Close
-          </button>
+        <div className="flex flex-col gap-4">
+          <ReviewInControl disabled={loading} onSubmit={handleReviewIn} />
 
-          <button
-            onClick={() => handleButtonClick("weak")}
-            disabled={loading || isFirstStage}
-            className="px-4 py-2 rounded-lg bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30
-                       disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            title={isFirstStage ? "Cannot go back from first stage" : ""}
-          >
-            {loading ? "..." : "Weak"}
-          </button>
+          <div className="flex gap-3 justify-end">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 rounded-lg border border-neutral-700 text-neutral-400 hover:bg-neutral-800 hover:text-white transition-colors"
+            >
+              Close
+            </button>
 
-          <button
-            onClick={() => handleButtonClick("again")}
-            disabled={loading}
-            className="px-4 py-2 rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/30 hover:bg-amber-500/30
-                       disabled:opacity-50 transition-colors"
-          >
-            {loading ? "..." : "Again"}
-          </button>
+            <button
+              onClick={() => handleButtonClick("weak")}
+              disabled={loading || isFirstStage}
+              className="px-4 py-2 rounded-lg bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30
+                         disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              title={isFirstStage ? "Cannot go back from first stage" : ""}
+            >
+              {loading ? "..." : "Weak"}
+            </button>
 
-          <button
-            onClick={() => handleButtonClick("good")}
-            disabled={loading}
-            className="px-4 py-2 rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30
-                       disabled:opacity-50 transition-colors"
-          >
-            {loading ? "..." : "Good"}
-          </button>
+            <button
+              onClick={() => handleButtonClick("again")}
+              disabled={loading}
+              className="px-4 py-2 rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/30 hover:bg-amber-500/30
+                         disabled:opacity-50 transition-colors"
+            >
+              {loading ? "..." : "Again"}
+            </button>
+
+            <button
+              onClick={() => handleButtonClick("good")}
+              disabled={loading}
+              className="px-4 py-2 rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30
+                         disabled:opacity-50 transition-colors"
+            >
+              {loading ? "..." : "Good"}
+            </button>
+          </div>
         </div>
       </div>
     </div>
