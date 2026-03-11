@@ -5,12 +5,14 @@ import { useRouter } from "next/navigation";
 import { signUp } from "@/lib/auth-client";
 import { EyeToggleBtn } from "@/components/ui/EyeToggleBtn";
 import Link from "next/link";
+import { getErrorMessage } from "@/lib/utils/error-handler";
 
 export default function SignUpPage() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [passwordMatch, setPasswordMatch] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   function toggleShowPassword() {
     setShowPassword((s) => !s);
@@ -21,6 +23,7 @@ export default function SignUpPage() {
     setError(null);
 
     const formData = new FormData(e.currentTarget);
+    const email = (formData.get("email") as string).trim();
     const password = formData.get("password") as string;
     const verifPassword = formData.get("verifPassword") as string;
 
@@ -30,17 +33,25 @@ export default function SignUpPage() {
     }
 
     setPasswordMatch(true);
+    setLoading(true);
 
-    const res = await signUp.email({
-      name: formData.get("name") as string,
-      email: formData.get("email") as string,
-      password: formData.get("password") as string,
-    });
+    try {
+      const res = await signUp.email({
+        name: formData.get("name") as string,
+        email,
+        password,
+        callbackURL: "/dashboard",
+      });
 
-    if (res.error) {
-      setError(res.error.message || "Something went wrong.");
-    } else {
-      router.push("/dashboard");
+      if (res.error) {
+        setError(res.error.message || "Something went wrong.");
+      } else {
+        router.push(`/verify-email?email=${encodeURIComponent(email)}`);
+      }
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -123,9 +134,10 @@ export default function SignUpPage() {
 
           <button
             type="submit"
-            className="w-full bg-gradient-to-b from-amber-400 to-amber-500 text-neutral-950 font-semibold rounded-lg px-4 py-3 text-sm tracking-wide hover:from-amber-300 hover:to-amber-400 transition-all shadow-lg shadow-amber-500/20"
+            disabled={loading}
+            className="w-full bg-gradient-to-b from-amber-400 to-amber-500 text-neutral-950 font-semibold rounded-lg px-4 py-3 text-sm tracking-wide hover:from-amber-300 hover:to-amber-400 transition-all shadow-lg shadow-amber-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Create Account
+            {loading ? "Creating account..." : "Create Account"}
           </button>
         </form>
 

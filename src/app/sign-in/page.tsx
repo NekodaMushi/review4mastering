@@ -5,11 +5,13 @@ import { useRouter } from "next/navigation";
 import { signIn } from "@/lib/auth-client";
 import { EyeToggleBtn } from "@/components/ui/EyeToggleBtn";
 import Link from "next/link";
+import { getErrorMessage } from "@/lib/utils/error-handler";
 
 export default function SignInPage() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   function toggleShowPassword() {
     setShowPassword((s) => !s);
@@ -20,16 +22,31 @@ export default function SignInPage() {
     setError(null);
 
     const formData = new FormData(e.currentTarget);
+    const email = (formData.get("email") as string).trim();
+    const password = formData.get("password") as string;
+    setLoading(true);
 
-    const res = await signIn.email({
-      email: formData.get("email") as string,
-      password: formData.get("password") as string,
-    });
+    try {
+      const res = await signIn.email({
+        email,
+        password,
+        callbackURL: "/dashboard",
+      });
 
-    if (res.error) {
-      setError(res.error.message || "Something went wrong.");
-    } else {
-      router.push("/dashboard");
+      if (res.error) {
+        if (res.error.message === "Email not verified") {
+          router.push(`/verify-email?email=${encodeURIComponent(email)}`);
+          return;
+        }
+
+        setError(res.error.message || "Something went wrong.");
+      } else {
+        router.push("/dashboard");
+      }
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -80,9 +97,10 @@ export default function SignInPage() {
           </div>
           <button
             type="submit"
-            className="w-full bg-gradient-to-b from-amber-400 to-amber-500 text-neutral-950 font-semibold rounded-lg px-4 py-3 text-sm tracking-wide hover:from-amber-300 hover:to-amber-400 transition-all shadow-lg shadow-amber-500/20"
+            disabled={loading}
+            className="w-full bg-gradient-to-b from-amber-400 to-amber-500 text-neutral-950 font-semibold rounded-lg px-4 py-3 text-sm tracking-wide hover:from-amber-300 hover:to-amber-400 transition-all shadow-lg shadow-amber-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Login
+            {loading ? "Logging in..." : "Login"}
           </button>
         </form>
 

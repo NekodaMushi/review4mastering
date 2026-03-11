@@ -17,11 +17,16 @@ export default function ForgotPasswordPage() {
     setLoading(true);
 
     try {
-      await requestPasswordReset({
+      const result = await requestPasswordReset({
         email,
-        redirectTo: `${window.location.origin}/reset-password`,
+        redirectTo: "/reset-password",
       });
-      setSuccess(true);
+
+      if (result.error) {
+        setError(getErrorMessage(result.error));
+      } else {
+        setSuccess(true);
+      }
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
@@ -40,8 +45,8 @@ export default function ForgotPasswordPage() {
             Email sent
           </h1>
           <p className="text-neutral-400">
-            A reset link has been sent to{" "}
-            <span className="text-amber-400 font-medium">{email}</span>
+            If an account exists for that email address, a reset link is on its
+            way.
           </p>
           <p className="text-sm text-neutral-600">
             The link expires in 10 minutes.
