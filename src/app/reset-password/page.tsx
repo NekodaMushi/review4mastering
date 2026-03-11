@@ -1,24 +1,25 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { resetPassword } from "@/lib/auth-client";
 import Link from "next/link";
 import { EyeToggleBtn } from "@/components/ui/EyeToggleBtn";
 import { getErrorMessage } from "@/lib/utils/error-handler";
 
 function ResetPasswordForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const token = searchParams.get("token");
   const tokenError = searchParams.get("error");
+  const isInvalidToken = tokenError === "INVALID_TOKEN" || !token;
 
   useEffect(() => {
     if (tokenError === "INVALID_TOKEN") {
@@ -30,8 +31,8 @@ function ResetPasswordForm() {
     e.preventDefault();
     setError("");
 
-    if (!token) {
-      setError("Missing token");
+    if (isInvalidToken || !token) {
+      setError("This link is invalid or has expired. Request a new link.");
       return;
     }
 
@@ -48,13 +49,16 @@ function ResetPasswordForm() {
     setLoading(true);
 
     try {
-      await resetPassword({
+      const result = await resetPassword({
         newPassword: password,
         token,
       });
 
-      alert("✓ Password reset successfully!");
-      router.push("/sign-in");
+      if (result.error) {
+        setError(getErrorMessage(result.error || "Error during password reset"));
+      } else {
+        setSuccess(true);
+      }
     } catch (err) {
       setError(getErrorMessage(err || "Error during password reset"));
     } finally {
@@ -75,8 +79,13 @@ function ResetPasswordForm() {
       <div className="relative z-10 w-full max-w-md mx-auto px-6 space-y-6">
         <div className="text-center space-y-2">
           <h1 className="font-[family-name:var(--font-sora)] text-3xl font-bold">
-            New password
+            {success ? "Password updated" : "New password"}
           </h1>
+          {success && (
+            <p className="text-sm text-neutral-500">
+              Your password has been reset. You can sign in with it now.
+            </p>
+          )}
         </div>
 
         {error && (
@@ -85,7 +94,16 @@ function ResetPasswordForm() {
           </div>
         )}
 
-        {tokenError === "INVALID_TOKEN" ? (
+        {success ? (
+          <div className="space-y-4 text-center">
+            <Link
+              href="/sign-in"
+              className="inline-block bg-gradient-to-b from-amber-400 to-amber-500 text-neutral-950 font-semibold rounded-lg px-6 py-3 text-sm tracking-wide hover:from-amber-300 hover:to-amber-400 transition-all shadow-lg shadow-amber-500/20"
+            >
+              Go to login
+            </Link>
+          </div>
+        ) : isInvalidToken ? (
           <div className="space-y-4 text-center">
             <p className="text-neutral-400">The link has expired.</p>
             <Link
