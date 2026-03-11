@@ -39,7 +39,7 @@ Ouvre [http://localhost:3000](http://localhost:3000)
 ## Features
 
 - ⏳ Authentification (email/password)
-- ⏳ Créer des notes=
-- ⏳ Réviser avec 3 actions: weak/again/good
+- ⏳ Créer des notes
+- ⏳ Réviser avec 4 actions: weak/again/good ou un interval choisi par l'utilisateur
 - ⏳ Historique de révisions
 - ⏳ Notifications de révision
