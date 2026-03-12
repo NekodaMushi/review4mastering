@@ -1,12 +1,12 @@
 "use client";
 
-import { note } from "@prisma/client";
 import { stageLabels, stageBgColor } from "@/lib/constants/noteStages";
 import { useReviewAction } from "@/lib/hooks/useReviewAction";
 import { ReviewInControl } from "@/components/ReviewInControl";
+import type { NoteRecord } from "@/lib/types/note";
 
 interface ReviewNoteProps {
-  note: note | null;
+  note: NoteRecord | null;
   isOpen: boolean;
   onClose: () => void;
   onActionComplete: () => void;
