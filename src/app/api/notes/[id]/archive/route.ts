@@ -6,10 +6,10 @@ import {
   cancelReviewNotification,
   scheduleReviewNotification,
 } from "@/lib/reviewQueue";
-import {
-  reviewRequestSchema,
-  resolveReviewUpdate,
-} from "@/lib/reviewScheduling";
+
+const archiveRequestSchema = z.object({
+  archived: z.boolean(),
+});
 
 export async function PATCH(
   req: Request,
@@ -27,10 +27,17 @@ export async function PATCH(
     }
 
     const body = await req.json();
-    const reviewRequest = reviewRequestSchema.parse(body);
+    const { archived } = archiveRequestSchema.parse(body);
 
     const note = await prisma.note.findUnique({
       where: { id },
+      select: {
+        id: true,
+        user_id: true,
+        archived_at: true,
+        completed_at: true,
+        next_review: true,
+      },
     });
 
     if (!note) {
@@ -41,46 +48,18 @@ export async function PATCH(
       return Response.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    if (note.archived_at) {
-      return Response.json(
-        { error: "Archived notes cannot be reviewed" },
-        { status: 400 }
-      );
-    }
-
-    const oldStage = note.current_stage;
-    const reviewUpdate = resolveReviewUpdate(oldStage, reviewRequest);
-
     const updatedNote = await prisma.note.update({
       where: { id },
       data: {
-        current_stage: reviewUpdate.newStage,
-        next_review: reviewUpdate.nextReview,
-        last_review: new Date(),
-        completed_at: reviewUpdate.preserveCompletedAt
-          ? note.completed_at
-          : reviewUpdate.newStage === "COMPLETED"
-            ? new Date()
-            : null,
+        archived_at: archived ? new Date() : null,
       },
     });
 
-    if (reviewUpdate.actionType === "review_in") {
-      await scheduleReviewNotification(id, reviewUpdate.nextReview);
-    } else if (reviewUpdate.newStage === "COMPLETED") {
+    if (archived) {
       await cancelReviewNotification(id);
-    } else {
-      await scheduleReviewNotification(id, reviewUpdate.nextReview);
+    } else if (!note.completed_at) {
+      await scheduleReviewNotification(id, note.next_review);
     }
-
-    await prisma.review_history.create({
-      data: {
-        note_id: id,
-        action_type: reviewUpdate.actionType,
-        old_stage: oldStage,
-        new_stage: reviewUpdate.newStage,
-      },
-    });
 
     return Response.json(updatedNote, { status: 200 });
   } catch (error) {
@@ -88,9 +67,10 @@ export async function PATCH(
       const first = error.issues?.[0]?.message ?? "Validation error";
       return Response.json({ error: first }, { status: 400 });
     }
-    console.error("Error marking note as reviewed:", error);
+
+    console.error("Error archiving note:", error);
     return Response.json(
-      { error: "Failed to mark note as reviewed" },
+      { error: "Failed to update archive state" },
       { status: 500 }
     );
   }

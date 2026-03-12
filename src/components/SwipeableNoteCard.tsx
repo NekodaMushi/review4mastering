@@ -1,7 +1,6 @@
 "use client";
 
 import { useRef, useEffect, useState } from "react";
-import { note } from "@prisma/client";
 import {
   motion,
   PanInfo,
@@ -12,6 +11,7 @@ import {
 import { NoteCard } from "./NoteCard";
 import { Trash2, Archive } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import type { NoteRecord } from "@/lib/types/note";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,12 +24,14 @@ import {
 } from "@/components/ui/alert-dialog";
 
 interface SwipeableNoteCardProps {
-  note: note;
+  note: NoteRecord;
   onDelete?: (noteId: string) => void;
   onArchive?: (noteId: string) => void;
-  onClick?: (note: note) => void;
+  onClick?: (note: NoteRecord) => void;
   selectionMode?: "delete" | "archive" | null;
   isSelected?: boolean;
+  allowArchive?: boolean;
+  archived?: boolean;
 }
 
 export function SwipeableNoteCard({
@@ -39,6 +41,8 @@ export function SwipeableNoteCard({
   onClick,
   selectionMode = null,
   isSelected = false,
+  allowArchive = true,
+  archived = false,
 }: SwipeableNoteCardProps) {
   const x = useMotionValue(0);
   const opacity = useMotionValue(1);
@@ -58,7 +62,9 @@ export function SwipeableNoteCard({
   const backgroundColor = useTransform(
     x,
     [-100, 0, 100],
-    ["rgb(239, 68, 68)", "rgb(23, 23, 23)", "rgb(34, 197, 94)"]
+    allowArchive
+      ? ["rgb(239, 68, 68)", "rgb(23, 23, 23)", "rgb(34, 197, 94)"]
+      : ["rgb(239, 68, 68)", "rgb(23, 23, 23)", "rgb(23, 23, 23)"]
   );
 
   const backgroundOpacity = useTransform(
@@ -70,7 +76,7 @@ export function SwipeableNoteCard({
       containerWidth * 0.8,
       containerWidth * 0.9,
     ],
-    [0, 1, 1, 1, 0]
+    allowArchive ? [0, 1, 1, 1, 0] : [0, 1, 1, 0, 0]
   );
 
   const handleDragStart = () => {
@@ -105,7 +111,7 @@ export function SwipeableNoteCard({
         stiffness: 300,
         damping: 30,
       });
-    } else if (info.offset.x > swipeThreshold) {
+    } else if (info.offset.x > swipeThreshold && allowArchive) {
       await animateOut("right");
       onArchive?.(note.id);
     } else {
@@ -199,9 +205,11 @@ export function SwipeableNoteCard({
         {!isDeleting && !selectionMode && (
           <motion.div
             style={{ backgroundColor, opacity: backgroundOpacity }}
-            className="absolute inset-0 flex items-center justify-between px-8"
+            className={`absolute inset-0 flex items-center px-8 ${
+              allowArchive ? "justify-between" : "justify-end"
+            }`}
           >
-            <Archive className="text-white" size={28} />
+            {allowArchive ? <Archive className="text-white" size={28} /> : null}
             <Trash2 className="text-white" size={28} />
           </motion.div>
         )}
@@ -273,7 +281,7 @@ export function SwipeableNoteCard({
               {selectionMode && !isSelected && (
                 <div className="absolute inset-0 bg-neutral-950 opacity-40 rounded-lg pointer-events-none" />
               )}
-              <NoteCard note={note} />
+              <NoteCard note={note} archived={archived} />
             </div>
           )}
         </motion.div>
