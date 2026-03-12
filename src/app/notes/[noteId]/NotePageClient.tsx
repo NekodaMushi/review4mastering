@@ -1,6 +1,5 @@
 "use client";
 
-import { note } from "@prisma/client";
 import { useRouter } from "next/navigation";
 import { ArrowLeftIcon } from "lucide-react";
 import { getReviewStatus } from "@/lib/utils/review";
@@ -8,9 +7,10 @@ import { useReviewAction } from "@/lib/hooks/useReviewAction";
 import { Spinner } from "@/components/ui/spinner";
 import { useState } from "react";
 import { ReviewInControl } from "@/components/ReviewInControl";
+import type { NoteRecord } from "@/lib/types/note";
 
 interface NotePageClientProps {
-  note: note;
+  note: NoteRecord;
 }
 
 export function NotePageClient({ note }: NotePageClientProps) {
