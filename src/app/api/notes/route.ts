@@ -33,6 +33,7 @@ export async function POST(req: Request) {
         link: link || null,
         current_stage: "TEN_MINUTES",
         next_review: nextReview,
+        archived_at: null,
       },
     });
     await scheduleReviewNotification(note.id, note.next_review);
@@ -57,17 +58,23 @@ export async function GET(req: Request) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const { searchParams } = new URL(req.url);
+    const includeArchived = searchParams.get("archived") === "true";
+    const archivedFilter = includeArchived ? { not: null } : null;
+    const orderBy = includeArchived
+      ? { archived_at: "desc" as const }
+      : { created_at: "desc" as const };
+
     const notes = await prisma.note.findMany({
       where: {
         user_id: session.user.id,
+        archived_at: archivedFilter,
       },
-      orderBy: {
-        created_at: "desc",
-      },
+      orderBy,
     });
 
     return Response.json(notes, { status: 200 });
-  } catch (error) {
+  } catch {
     return Response.json(
       { error: "Failed to fetch notes" },
       { status: 500 }

@@ -3,9 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "postgresql"
 }
 
 model note {
@@ -19,6 +17,7 @@ model note {
   next_review    DateTime         @db.Timestamp(6)
   last_review    DateTime?        @db.Timestamp(6)
   completed_at   DateTime?        @db.Timestamp(6)
+  archived_at    DateTime?        @db.Timestamp(6)
   updated_at     DateTime?        @default(now()) @db.Timestamp(6)
   user           User             @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   review_history review_history[]
@@ -26,6 +25,7 @@ model note {
   @@index([next_review], map: "idx_note_prochaine_review")
   @@index([current_stage], map: "idx_note_stade_actuel")
   @@index([user_id], map: "idx_note_user_id")
+  @@index([user_id, archived_at], map: "idx_note_user_archived_at")
 }
 
 model review_history {

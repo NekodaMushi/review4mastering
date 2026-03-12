@@ -30,5 +30,9 @@ export default async function NotePage({ params }: PageProps) {
     notFound();
   }
 
+  if (note.archived_at) {
+    redirect("/notes/archived");
+  }
+
   return <NotePageClient note={note} />;
 }

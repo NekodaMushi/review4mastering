@@ -1,17 +1,26 @@
 "use client";
 
-import { note } from "@prisma/client";
 import { useAvatarColor } from "@/hooks/useAvatorColor";
 import { getReviewStatus } from "@/lib/utils/review";
+import type { NoteRecord } from "@/lib/types/note";
 
 interface NoteCardProps {
-  note: note;
+  note: NoteRecord;
+  archived?: boolean;
 }
 
-export function NoteCard({ note }: NoteCardProps) {
+export function NoteCard({ note, archived = false }: NoteCardProps) {
   const reviewStatus = getReviewStatus(note.next_review, note.current_stage);
   const avatarColor = useAvatarColor(note.id);
   const avatarLetter = note.name.charAt(0).toUpperCase();
+  const archivedAt = note.archived_at ? new Date(note.archived_at) : null;
+  const badgeClass = archived
+    ? "bg-neutral-700 text-neutral-200"
+    : `${reviewStatus.bgColor} ${reviewStatus.textColor}`;
+  const badgeLabel = archived ? "Archived" : reviewStatus.label;
+  const secondaryDate = archivedAt
+    ? `Archived: ${archivedAt.toLocaleDateString()}`
+    : reviewStatus.dateText;
 
   return (
     <div className="bg-neutral-900 rounded-lg border border-neutral-800 p-4 hover:border-neutral-700 transition-colors">
@@ -29,10 +38,8 @@ export function NoteCard({ note }: NoteCardProps) {
             <h3 className="text-lg font-bold text-white truncate">
               {note.name}
             </h3>
-            <span
-              className={`px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap ${reviewStatus.bgColor} ${reviewStatus.textColor}`}
-            >
-              {reviewStatus.label}
+            <span className={`px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap ${badgeClass}`}>
+              {badgeLabel}
             </span>
           </div>
 
@@ -58,10 +65,10 @@ export function NoteCard({ note }: NoteCardProps) {
 
             <span
               className={
-                reviewStatus.isDue ? "text-amber-400 font-semibold" : ""
+                !archived && reviewStatus.isDue ? "text-amber-400 font-semibold" : ""
               }
             >
-              {reviewStatus.dateText}
+              {secondaryDate}
             </span>
           </div>
         </div>

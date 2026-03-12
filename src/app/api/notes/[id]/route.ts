@@ -41,6 +41,13 @@ export async function PATCH(
       return Response.json({ error: "Forbidden" }, { status: 403 });
     }
 
+    if (note.archived_at) {
+      return Response.json(
+        { error: "Archived notes cannot be reviewed" },
+        { status: 400 }
+      );
+    }
+
     const oldStage = note.current_stage;
     const reviewUpdate = resolveReviewUpdate(oldStage, reviewRequest);
 
@@ -120,6 +127,8 @@ export async function DELETE(
     await prisma.note.delete({
       where: { id },
     });
+
+    await cancelReviewNotification(id);
 
     return Response.json(
       { success: true, message: "Note deleted successfully" },
