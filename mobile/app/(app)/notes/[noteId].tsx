@@ -63,14 +63,18 @@ export default function NoteDetailScreen() {
 
     try {
       const headers = await authHeaders();
-      const res = await fetch(`${API_BASE_URL}/api/notes`, { headers });
+      const [activeRes, archivedRes] = await Promise.all([
+        fetch(`${API_BASE_URL}/api/notes`, { headers }),
+        fetch(`${API_BASE_URL}/api/notes?archived=true`, { headers }),
+      ]);
 
-      if (!res.ok) {
+      if (!activeRes.ok || !archivedRes.ok) {
         throw new Error("Failed to fetch notes");
       }
 
-      const notes: NoteRecord[] = await res.json();
-      const found = notes.find((n) => n.id === noteId);
+      const activeNotes: NoteRecord[] = await activeRes.json();
+      const archivedNotes: NoteRecord[] = await archivedRes.json();
+      const found = [...activeNotes, ...archivedNotes].find((n) => n.id === noteId);
 
       if (!found) {
         setError("Note not found");
