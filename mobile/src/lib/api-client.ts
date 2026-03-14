@@ -40,8 +40,11 @@ export const apiClient = {
   },
 
   async getNote(id: string): Promise<NoteRecord> {
-    const notes = await apiRequest<NoteRecord[]>("/api/notes");
-    const note = notes.find((n) => n.id === id);
+    const [active, archived] = await Promise.all([
+      apiRequest<NoteRecord[]>("/api/notes"),
+      apiRequest<NoteRecord[]>("/api/notes?archived=true"),
+    ]);
+    const note = [...active, ...archived].find((n) => n.id === id);
     if (!note) {
       throw new Error(`Note with id ${id} not found`);
     }
