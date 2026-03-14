@@ -13,7 +13,7 @@ export const stageLabels: Record<ReviewStage, string> = {
   COMPLETED: "Completed",
 };
 
-/** Background and text colors per stage (hex values for React Native). */
+/** Background and text colors per stage (React Native hex values). */
 export const stageColors: Record<ReviewStage, { bg: string; text: string }> = {
   TEN_MINUTES: { bg: "#fee2e2", text: "#991b1b" },
   ONE_DAY: { bg: "#ffedd5", text: "#9a3412" },

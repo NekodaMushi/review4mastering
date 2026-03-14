@@ -1,4 +1,4 @@
-import { stageLabels, stageColors } from "@/lib/constants/noteStages";
+import { stageLabels, stageBgColor } from "@/lib/constants/noteStages";
 import type { ReviewStage } from "@/types";
 
 interface ReviewStatusResult {
@@ -19,14 +19,13 @@ export function getReviewStatus(
   const isDue = reviewDate <= now;
 
   const fallbackStage = currentStage || "TEN_MINUTES";
-  const colors = stageColors[fallbackStage as ReviewStage];
 
   if (isDue) {
     return {
       isDue: true,
       label: "Due now!",
-      bgColor: colors.bg,
-      textColor: colors.text,
+      bgColor: stageBgColor[fallbackStage],
+      textColor: "",
       dateText: `Next review: ${reviewDate.toLocaleDateString()}`,
       showReviewButtons: true,
     };
@@ -34,9 +33,9 @@ export function getReviewStatus(
 
   return {
     isDue: false,
-    label: stageLabels[fallbackStage as ReviewStage],
-    bgColor: colors.bg,
-    textColor: colors.text,
+    label: stageLabels[fallbackStage],
+    bgColor: stageBgColor[fallbackStage],
+    textColor: "",
     dateText: `Next review: ${reviewDate.toLocaleDateString()}`,
     showReviewButtons: false,
   };
