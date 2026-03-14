@@ -1,25 +1,34 @@
+import React from "react";
 import { Pressable } from "react-native";
 import { Eye, EyeOff } from "lucide-react-native";
 
-type Props = {
+import { cn } from "@/lib/utils";
+
+type EyeToggleBtnProps = {
   pressed: boolean;
   onPress: () => void;
   className?: string;
+  color?: string;
 };
 
-export function EyeToggleBtn({ pressed, onPress, className }: Props) {
+function EyeToggleBtn({
+  pressed,
+  onPress,
+  className,
+  color = "#a3a3a3",
+}: EyeToggleBtnProps) {
+  const Icon = pressed ? EyeOff : Eye;
+
   return (
     <Pressable
       onPress={onPress}
-      accessibilityLabel={pressed ? "Hide password" : "Show password"}
+      className={cn("items-center justify-center p-2", className)}
       accessibilityRole="button"
-      className={className}
+      accessibilityLabel={pressed ? "Hide password" : "Show password"}
     >
-      {pressed ? (
-        <EyeOff size={20} color="#737373" />
-      ) : (
-        <Eye size={20} color="#737373" />
-      )}
+      <Icon size={20} color={color} />
     </Pressable>
   );
 }
+
+export { EyeToggleBtn };
