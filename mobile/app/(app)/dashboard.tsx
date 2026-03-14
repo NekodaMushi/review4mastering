@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { View, Text, Pressable, ActivityIndicator } from "react-native";
 import { useRouter } from "expo-router";
-import { useAuth } from "@/contexts/auth";
+import { useAuth } from "@/lib/hooks/useAuth";
 
 export default function DashboardScreen() {
   const router = useRouter();
