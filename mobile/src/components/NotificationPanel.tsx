@@ -90,15 +90,18 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
 
   const handleTestNotification = async () => {
     try {
-      await fetch(`${API_BASE_URL}/api/test-notification`, {
+      const response = await fetch(`${API_BASE_URL}/api/notifications/test`, {
         method: "POST",
         credentials: "include",
       });
+
+      if (!response.ok) return;
+
       setTestSent(true);
       clearTimeout(testTimerRef.current);
       testTimerRef.current = setTimeout(() => setTestSent(false), 3000);
     } catch {
-      // silent fail
+      // silent fail on network errors
     }
   };
 
