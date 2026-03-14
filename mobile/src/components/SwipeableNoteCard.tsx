@@ -50,7 +50,7 @@ const SELECTION_COLORS = {
 interface SwipeableNoteCardProps {
   note: NoteRecord;
   onDelete?: (noteId: string) => void;
-  onArchive?: (noteId: string) => void;
+  onArchive?: (noteId: string) => Promise<void> | void;
   onClick?: (note: NoteRecord) => void;
   selectionMode?: "delete" | "archive" | null;
   isSelected?: boolean;
@@ -80,9 +80,18 @@ export function SwipeableNoteCard({
     setIsDeleteDialogOpen(true);
   }, []);
 
-  const triggerArchive = useCallback(() => {
-    onArchive?.(note.id);
-  }, [note.id, onArchive]);
+  const triggerArchive = useCallback(async () => {
+    try {
+      await onArchive?.(note.id);
+      // Success — animate out
+      translateX.value = withTiming(screenWidth * 1.5, { duration: 300 });
+      cardOpacity.value = withTiming(0, { duration: 200 });
+    } catch {
+      // Failed — spring back to original position
+      translateX.value = withSpring(0, SPRING_CONFIG);
+      cardOpacity.value = withTiming(1);
+    }
+  }, [note.id, onArchive, translateX, cardOpacity, screenWidth]);
 
   const panGesture = Gesture.Pan()
     .enabled(!isDeleting && !selectionMode)
@@ -109,9 +118,7 @@ export function SwipeableNoteCard({
         translateX.value = withSpring(0, SPRING_CONFIG);
         runOnJS(openDeleteDialog)();
       } else if (offset > swipeThreshold && allowArchive) {
-        // Swipe right -> archive (animate out)
-        translateX.value = withTiming(screenWidth * 1.5, { duration: 300 });
-        cardOpacity.value = withTiming(0, { duration: 200 });
+        // Swipe right -> archive (hold position, animate in JS after success/failure)
         runOnJS(triggerArchive)();
       } else {
         translateX.value = withSpring(0, SPRING_CONFIG);
