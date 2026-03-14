@@ -1,6 +1,7 @@
 node_modules
 .next
 .git
+mobile
 .gitignore
 README.md
 .env
