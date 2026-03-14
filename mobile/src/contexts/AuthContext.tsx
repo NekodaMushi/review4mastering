@@ -45,18 +45,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     let cancelled = false;
 
     async function restoreSession() {
-      const result = await getSession();
+      try {
+        const result = await getSession();
 
-      if (cancelled) return;
+        if (cancelled) return;
 
-      if (result.data) {
-        setState({
-          user: result.data.user,
-          session: result.data.session,
-          isPending: false,
-        });
-      } else {
-        setState({ user: null, session: null, isPending: false });
+        if (result.data) {
+          setState({
+            user: result.data.user,
+            session: result.data.session,
+            isPending: false,
+          });
+        } else {
+          setState({ user: null, session: null, isPending: false });
+        }
+      } catch {
+        if (!cancelled) {
+          setState({ user: null, session: null, isPending: false });
+        }
       }
     }
 
@@ -88,16 +94,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     async (email: string, password: string, name: string) => {
       const result = await signUpWithEmail(email, password, name);
 
+      if (result.error) {
+        return { error: result.error };
+      }
+
+      // Sign-up succeeded — session may be null if email verification is required
       if (result.data) {
         setState({
           user: result.data.user,
           session: result.data.session,
           isPending: false,
         });
-        return {};
       }
 
-      return { error: result.error };
+      return {};
     },
     [],
   );

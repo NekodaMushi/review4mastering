@@ -22,8 +22,13 @@ export interface Session {
   expiresAt: string;
 }
 
-interface AuthSuccess {
+interface AuthSuccessWithSession {
   data: { session: Session; user: User };
+  error?: undefined;
+}
+
+interface AuthSuccessNoSession {
+  data: null;
   error?: undefined;
 }
 
@@ -32,7 +37,7 @@ interface AuthError {
   error: { message: string };
 }
 
-type AuthResult = AuthSuccess | AuthError;
+export type AuthResult = AuthSuccessWithSession | AuthSuccessNoSession | AuthError;
 
 async function getStoredToken(): Promise<string | null> {
   return SecureStore.getItemAsync(SESSION_TOKEN_KEY);
@@ -81,7 +86,8 @@ async function handleAuthResponse(response: Response): Promise<AuthResult> {
     return { data: { session, user } };
   }
 
-  return { error: { message: "Unexpected response format" } };
+  // Success but no session (e.g., sign-up with email verification required)
+  return { data: null };
 }
 
 export async function signInWithEmail(
@@ -137,7 +143,7 @@ async function postSimple(
 }
 
 export function requestPasswordReset(email: string) {
-  return postSimple("/api/auth/forgot-password", {
+  return postSimple("/api/auth/request-password-reset", {
     email,
     redirectTo: "/reset-password",
   });
