@@ -1,18 +1,10 @@
-import React, { createContext, useCallback, useContext } from "react";
-import { Modal, Pressable, View, Text } from "react-native";
+import React, { useCallback } from "react";
+import { Modal, Pressable, Text, View } from "react-native";
 
 import { cn } from "@/lib/utils";
 import { Button } from "./Button";
 
 const noop = () => {};
-
-type AlertDialogContextValue = {
-  onOpenChange: (open: boolean) => void;
-};
-
-const AlertDialogContext = createContext<AlertDialogContextValue>({
-  onOpenChange: noop,
-});
 
 type AlertDialogProps = {
   open: boolean;
@@ -24,21 +16,19 @@ function AlertDialog({ open, onOpenChange, children }: AlertDialogProps) {
   const handleClose = useCallback(() => onOpenChange(false), [onOpenChange]);
 
   return (
-    <AlertDialogContext.Provider value={{ onOpenChange }}>
-      <Modal
-        visible={open}
-        transparent
-        animationType="fade"
-        onRequestClose={handleClose}
+    <Modal
+      visible={open}
+      transparent
+      animationType="fade"
+      onRequestClose={handleClose}
+    >
+      <Pressable
+        className="flex-1 items-center justify-center bg-black/60"
+        onPress={handleClose}
       >
-        <Pressable
-          className="flex-1 items-center justify-center bg-black/60"
-          onPress={handleClose}
-        >
-          <Pressable onPress={noop}>{children}</Pressable>
-        </Pressable>
-      </Modal>
-    </AlertDialogContext.Provider>
+        <Pressable onPress={noop}>{children}</Pressable>
+      </Pressable>
+    </Modal>
   );
 }
 
@@ -115,15 +105,17 @@ type AlertDialogButtonProps = {
   className?: string;
   children: React.ReactNode;
   onPress?: () => void;
+  disabled?: boolean;
 };
 
 function AlertDialogAction({
   className,
   children,
   onPress,
+  disabled,
 }: AlertDialogButtonProps) {
   return (
-    <Button variant="default" className={className} onPress={onPress}>
+    <Button variant="default" className={className} onPress={onPress} disabled={disabled}>
       {children}
     </Button>
   );
@@ -133,16 +125,10 @@ function AlertDialogCancel({
   className,
   children,
   onPress,
+  disabled,
 }: AlertDialogButtonProps) {
-  const { onOpenChange } = useContext(AlertDialogContext);
-
-  const handlePress = useCallback(() => {
-    onOpenChange(false);
-    onPress?.();
-  }, [onOpenChange, onPress]);
-
   return (
-    <Button variant="outline" className={className} onPress={handlePress}>
+    <Button variant="outline" className={className} onPress={onPress} disabled={disabled}>
       {children}
     </Button>
   );

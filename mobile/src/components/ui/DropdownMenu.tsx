@@ -40,17 +40,25 @@ function DropdownMenu({ children }: DropdownMenuProps) {
 type DropdownMenuTriggerProps = {
   children: React.ReactNode;
   className?: string;
+  disabled?: boolean;
 };
 
 function DropdownMenuTrigger({
   children,
   className,
+  disabled,
 }: DropdownMenuTriggerProps) {
   const { setOpen } = useContext(DropdownMenuContext);
-  const handlePress = useCallback(() => setOpen(true), [setOpen]);
+  const handlePress = useCallback(() => {
+    if (!disabled) setOpen(true);
+  }, [setOpen, disabled]);
 
   return (
-    <Pressable className={className} onPress={handlePress}>
+    <Pressable
+      className={cn(className, disabled && "opacity-40")}
+      onPress={handlePress}
+      disabled={disabled}
+    >
       {children}
     </Pressable>
   );
