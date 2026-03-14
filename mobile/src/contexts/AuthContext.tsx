@@ -1,79 +1,125 @@
-import React, {
-  createContext,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import React, {                                                                                                                                                                           
+    createContext,                                                                                                                                                                        
+    useCallback,                               
+    useEffect,
+    useMemo,
+    useState,
+  } from "react";
+  import type { User, Session } from "@/lib/auth-client";
+  import {
+    signInWithEmail,
+    signUpWithEmail,
+    signOut as authSignOut,
+    getSession,
+  } from "@/lib/auth-client";
 
-export interface User {
-  id: string;
-  email: string;
-  name: string;
-}
+  interface AuthState {
+    user: User | null;
+    session: Session | null;
+    isPending: boolean;
+  }
 
-export interface Session {
-  id: string;
-  token: string;
-}
+  interface AuthContextValue extends AuthState {
+    signIn: (
+      email: string,
+      password: string,
+    ) => Promise<{ error?: { message: string } }>;
+    signUp: (
+      email: string,
+      password: string,
+      name: string,
+    ) => Promise<{ error?: { message: string } }>;
+    signOut: () => Promise<void>;
+  }
 
-interface AuthState {
-  user: User | null;
-  session: Session | null;
-  isPending: boolean;
-}
+  export const AuthContext = createContext<AuthContextValue | null>(null);
 
-interface AuthContextValue extends AuthState {
-  signIn: (
-    email: string,
-    password: string,
-  ) => Promise<{ error?: { message: string } }>;
-  signUp: (
-    email: string,
-    password: string,
-    name: string,
-  ) => Promise<{ error?: { message: string } }>;
-  signOut: () => Promise<void>;
-}
+  export function AuthProvider({ children }: { children: React.ReactNode }) {
+    const [state, setState] = useState<AuthState>({
+      user: null,
+      session: null,
+      isPending: true,
+    });
 
-export const AuthContext = createContext<AuthContextValue | null>(null);
+    useEffect(() => {
+      let cancelled = false;
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [state, setState] = useState<AuthState>({
-    user: null,
-    session: null,
-    isPending: true,
-  });
+      async function restoreSession() {
+        try {
+          const result = await getSession();
 
-  useEffect(() => {
-    // Placeholder: restore session from secure storage
-    setState((prev) => ({ ...prev, isPending: false }));
-  }, []);
+          if (cancelled) return;
 
-  const signIn = useCallback(
-    async (_email: string, _password: string) => {
-      // Placeholder: implement sign-in via API
-      return { error: { message: "Not implemented" } };
-    },
-    [],
-  );
+          if (result.data) {
+            setState({
+              user: result.data.user,
+              session: result.data.session,
+              isPending: false,
+            });
+          } else {
+            setState({ user: null, session: null, isPending: false });
+          }
+        } catch {
+          if (!cancelled) {
+            setState({ user: null, session: null, isPending: false });
+          }
+        }
+      }
 
-  const signUp = useCallback(
-    async (_email: string, _password: string, _name: string) => {
-      // Placeholder: implement sign-up via API
-      return { error: { message: "Not implemented" } };
-    },
-    [],
-  );
+      restoreSession();
+      return () => {
+        cancelled = true;
+      };
+    }, []);
 
-  const signOut = useCallback(async () => {
-    setState({ user: null, session: null, isPending: false });
-  }, []);
+    const signIn = useCallback(
+      async (email: string, password: string) => {
+        const result = await signInWithEmail(email, password);
 
-  const value = useMemo<AuthContextValue>(
-    () => ({ ...state, signIn, signUp, signOut }),
-    [state, signIn, signUp, signOut],
-  );
+        if (result.data) {
+          setState({
+            user: result.data.user,
+            session: result.data.session,
+            isPending: false,
+          });
+          return {};
+        }
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-}
+        return { error: result.error };
+      },
+      [],
+    );
+
+    const signUp = useCallback(
+      async (email: string, password: string, name: string) => {
+        const result = await signUpWithEmail(email, password, name);
+
+        if (result.error) {
+          return { error: result.error };
+        }
+
+        if (result.data) {
+          setState({
+            user: result.data.user,
+            session: result.data.session,
+            isPending: false,
+          });
+        }
+
+        return {};
+      },
+      [],
+    );
+
+    const signOut = useCallback(async () => {
+      await authSignOut();
+      setState({ user: null, session: null, isPending: false });
+    }, []);
+
+    const value = useMemo<AuthContextValue>(
+      () => ({ ...state, signIn, signUp, signOut }),
+      [state, signIn, signUp, signOut],
+    );
+
+    return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  }
