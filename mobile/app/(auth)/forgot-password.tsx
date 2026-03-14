@@ -31,7 +31,7 @@ export default function ForgotPasswordScreen() {
     setLoading(true);
 
     try {
-      const result = await authPost("/api/auth/forgot-password", {
+      const result = await authPost("/api/auth/request-password-reset", {
         email: trimmedEmail,
         redirectTo: "/reset-password",
       });
